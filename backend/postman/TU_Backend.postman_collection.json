@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "TU Backend",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+    "description": "Postman collection for the TU backend API (register, login, applicant, employer, university).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"pass123\",\n  \"role\": \"applicant\",\n  \"name\": \"Alice\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth","register"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// if response contains access_token, save to environment",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json.access_token) { pm.environment.set('authToken', json.access_token); }",
+                  "} catch (e) { }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"alice@example.com\", \"password\": \"pass123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth","login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json.access_token) { pm.environment.set('authToken', json.access_token); }",
+                  "} catch (e) { }"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Applicant",
+      "item": [
+        {
+          "name": "View Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applicant/view-jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["applicant","view-jobs"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/applicant/upload-resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["applicant","upload-resume"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Employer",
+      "item": [
+        {
+          "name": "Post Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"title\": \"Software Engineer\", \"description\": \"Job description here\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employer/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer","jobs"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"university_id\": 1, \"student_name\": \"Bob\", \"degree\": \"BSc\", \"year\": 2020 }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employer/request-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["employer","request-verification"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "University",
+      "item": [
+        {
+          "name": "Verify Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"status\": \"VERIFIED\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/university/verify-request/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["university","verify-request","1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": []
+}

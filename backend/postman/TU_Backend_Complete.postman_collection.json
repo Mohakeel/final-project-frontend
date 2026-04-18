@@ -1,0 +1,456 @@
+{
+  "info": {
+    "name": "TU Backend - Complete API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+    "description": "Complete Postman collection for TU Backend with full CRUD operations for resumes, jobs, applications, and blockchain certificate verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Applicant",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"applicant@example.com\",\n  \"password\": \"pass123\",\n  \"role\": \"applicant\",\n  \"name\": \"John Applicant\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"]}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {"exec": ["try { if (pm.response.json().access_token) pm.environment.set('applicantToken', pm.response.json().access_token); } catch(e) { }"]}
+            }
+          ]
+        },
+        {
+          "name": "Register Employer",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employer@example.com\",\n  \"password\": \"pass123\",\n  \"role\": \"employer\",\n  \"name\": \"TechCorp Inc\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"]}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {"exec": ["try { if (pm.response.json().access_token) pm.environment.set('employerToken', pm.response.json().access_token); } catch(e) { }"]}
+            }
+          ]
+        },
+        {
+          "name": "Register University",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"uni@example.com\",\n  \"password\": \"pass123\",\n  \"role\": \"university\",\n  \"name\": \"State University\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"]}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {"exec": ["try { if (pm.response.json().access_token) pm.environment.set('universityToken', pm.response.json().access_token); } catch(e) { }"]}
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"email\": \"applicant@example.com\", \"password\": \"pass123\"}"},
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"]}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.access_token);",
+                  "    // also keep role-specific variable if needed",
+                  "    if (jsonData.role === 'applicant') pm.environment.set('applicantToken', jsonData.access_token);",
+                  "    if (jsonData.role === 'employer') pm.environment.set('employerToken', jsonData.access_token);",
+                  "    if (jsonData.role === 'university') pm.environment.set('universityToken', jsonData.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth","logout"]}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// clear stored tokens on successful logout",
+                  "if (pm.response.code === 200) {",
+                  "    pm.environment.unset('token');",
+                  "    pm.environment.unset('applicantToken');",
+                  "    pm.environment.unset('employerToken');",
+                  "    pm.environment.unset('universityToken');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Applicant - Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/profile", "host": ["{{baseUrl}}"], "path": ["applicant","profile"]}
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"full_name\": \"John Updated\",\"phone\": \"+1234567890\"}"},
+            "url": {"raw": "{{baseUrl}}/applicant/profile", "host": ["{{baseUrl}}"], "path": ["applicant","profile"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applicant - Resume",
+      "item": [
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "body": {"mode": "formdata", "formdata": [{"key": "resume", "type": "file", "src": ""}]},
+            "url": {"raw": "{{baseUrl}}/applicant/upload-resume", "host": ["{{baseUrl}}"], "path": ["applicant","upload-resume"]}
+          }
+        },
+        {
+          "name": "Update Resume",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "body": {"mode": "formdata", "formdata": [{"key": "resume", "type": "file", "src": ""}]},
+            "url": {"raw": "{{baseUrl}}/applicant/resume", "host": ["{{baseUrl}}"], "path": ["applicant","resume"]}
+          }
+        },
+        {
+          "name": "Delete Resume",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/resume", "host": ["{{baseUrl}}"], "path": ["applicant","resume"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applicant - Jobs",
+      "item": [
+        {
+          "name": "View All Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/view-jobs", "host": ["{{baseUrl}}"], "path": ["applicant","view-jobs"]}
+          }
+        },
+        {
+          "name": "View Job Detail",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/job/1", "host": ["{{baseUrl}}"], "path": ["applicant","job","1"]}
+          }
+        },
+        {
+          "name": "Apply for Job",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"cover_letter\": \"I am interested in this position...\"}"},
+            "url": {"raw": "{{baseUrl}}/applicant/apply-job/1", "host": ["{{baseUrl}}"], "path": ["applicant","apply-job","1"]}
+          }
+        },
+        {
+          "name": "View My Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/applications", "host": ["{{baseUrl}}"], "path": ["applicant","applications"]}
+          }
+        },
+        {
+          "name": "Withdraw Application",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{applicantToken}}"}],
+            "url": {"raw": "{{baseUrl}}/applicant/application/1", "host": ["{{baseUrl}}"], "path": ["applicant","application","1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer - Profile",
+      "item": [
+        {
+          "name": "Get Employer Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/profile", "host": ["{{baseUrl}}"], "path": ["employer","profile"]}
+          }
+        },
+        {
+          "name": "Update Employer Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"company_email\": \"hr@techcorp.com\",\"industry\": \"Technology\"}"},
+            "url": {"raw": "{{baseUrl}}/employer/profile", "host": ["{{baseUrl}}"], "path": ["employer","profile"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer - Jobs",
+      "item": [
+        {
+          "name": "Post New Job",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"title\": \"Senior Engineer\",\"description\": \"Looking for experienced engineers\",\"location\": \"Remote\",\"salary_min\": 80000,\"salary_max\": 120000,\"job_type\": \"Full-time\"}"},
+            "url": {"raw": "{{baseUrl}}/employer/jobs", "host": ["{{baseUrl}}"], "path": ["employer","jobs"]}
+          }
+        },
+        {
+          "name": "View My Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/jobs", "host": ["{{baseUrl}}"], "path": ["employer","jobs"]}
+          }
+        },
+        {
+          "name": "Get Job Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/job/1", "host": ["{{baseUrl}}"], "path": ["employer","job","1"]}
+          }
+        },
+        {
+          "name": "Update Job",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"title\": \"Senior Engineer (updated)\",\"status\": \"CLOSED\"}"},
+            "url": {"raw": "{{baseUrl}}/employer/job/1", "host": ["{{baseUrl}}"], "path": ["employer","job","1"]}
+          }
+        },
+        {
+          "name": "Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/job/1", "host": ["{{baseUrl}}"], "path": ["employer","job","1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer - Applications",
+      "item": [
+        {
+          "name": "View Job Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/job/1/applications", "host": ["{{baseUrl}}"], "path": ["employer","job","1","applications"]}
+          }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"status\": \"ACCEPTED\"}"},
+            "url": {"raw": "{{baseUrl}}/employer/application/1/status", "host": ["{{baseUrl}}"], "path": ["employer","application","1","status"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer - Verification",
+      "item": [
+        {
+          "name": "Request Verification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"university_id\": 1,\"student_name\": \"Jane Doe\",\"degree\": \"Bachelor of Science\",\"year\": 2023}"},
+            "url": {"raw": "{{baseUrl}}/employer/request-verification", "host": ["{{baseUrl}}"], "path": ["employer","request-verification"]}
+          }
+        },
+        {
+          "name": "Get Verification Requests",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{employerToken}}"}],
+            "url": {"raw": "{{baseUrl}}/employer/verification-requests", "host": ["{{baseUrl}}"], "path": ["employer","verification-requests"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "University - Profile",
+      "item": [
+        {
+          "name": "Get University Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "url": {"raw": "{{baseUrl}}/university/profile", "host": ["{{baseUrl}}"], "path": ["university","profile"]}
+          }
+        },
+        {
+          "name": "Update University Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"uni_email\": \"admin@stateuni.edu\",\"uni_code\": \"SU123\"}"},
+            "url": {"raw": "{{baseUrl}}/university/profile", "host": ["{{baseUrl}}"], "path": ["university","profile"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "University - Verification",
+      "item": [
+        {
+          "name": "Get Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "url": {"raw": "{{baseUrl}}/university/verification-requests", "host": ["{{baseUrl}}"], "path": ["university","verification-requests"]}
+          }
+        },
+        {
+          "name": "Get All Verification Requests",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "url": {"raw": "{{baseUrl}}/university/all-verification-requests", "host": ["{{baseUrl}}"], "path": ["university","all-verification-requests"]}
+          }
+        },
+        {
+          "name": "Verify Certificate (BLOCKCHAIN)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"status\": \"VERIFIED\"}"},
+            "url": {"raw": "{{baseUrl}}/university/verify-request/1", "host": ["{{baseUrl}}"], "path": ["university","verify-request","1"]}
+          }
+        },
+        {
+          "name": "Reject Certificate",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "body": {"mode": "raw", "raw": "{\"status\": \"REJECTED\",\"reason\": \"Invalid documentation\"}"},
+            "url": {"raw": "{{baseUrl}}/university/verify-request/1", "host": ["{{baseUrl}}"], "path": ["university","verify-request","1"]}
+          }
+        },
+        {
+          "name": "Get Certificate Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "url": {"raw": "{{baseUrl}}/university/certificate/1", "host": ["{{baseUrl}}"], "path": ["university","certificate","1"]}
+          }
+        },
+        {
+          "name": "Upload Certificate",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "student_name", "type": "text", "value": ""},
+                {"key": "degree", "type": "text", "value": ""},
+                {"key": "year", "type": "text", "value": ""},
+                {"key": "certificate", "type": "file", "src": ""}
+              ]
+            },
+            "url": {"raw": "{{baseUrl}}/university/certificate", "host": ["{{baseUrl}}"], "path": ["university","certificate"]}
+          }
+        },
+        {
+          "name": "Update Certificate",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "student_name", "type": "text", "value": ""},
+                {"key": "degree", "type": "text", "value": ""},
+                {"key": "year", "type": "text", "value": ""},
+                {"key": "certificate", "type": "file", "src": ""}
+              ]
+            },
+            "url": {"raw": "{{baseUrl}}/university/certificate/1", "host": ["{{baseUrl}}"], "path": ["university","certificate","1"]}
+          }
+        },
+        {
+          "name": "Delete Certificate",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{universityToken}}"}],
+            "url": {"raw": "{{baseUrl}}/university/certificate/1", "host": ["{{baseUrl}}"], "path": ["university","certificate","1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public - Certificate Verification",
+      "item": [
+        {
+          "name": "Verify Certificate by Hash (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{baseUrl}}/university/certificate-verification/abc123hash456", "host": ["{{baseUrl}}"], "path": ["university","certificate-verification","abc123hash456"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": []
+}

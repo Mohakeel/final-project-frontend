@@ -1,0 +1,106 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    DATABASE SEEDING - QUICK REFERENCE                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─ COMMANDS ────────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Seed Database (Safe):                                                        │
+│    cd backend                                                                  │
+│    python seed_database.py                                                     │
+│                                                                                │
+│  Clear & Reseed (⚠️ Deletes all data):                                        │
+│    cd backend                                                                  │
+│    python seed_database.py --clear                                             │
+│                                                                                │
+│  Verify Setup:                                                                 │
+│    cd backend                                                                  │
+│    python verify_seed.py                                                       │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TEST CREDENTIALS ────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Password for ALL accounts: password123                                       │
+│                                                                                │
+│  🧑 Applicant:   john.doe@email.com                                           │
+│  🏢 Employer:    hr@techcorp.com                                              │
+│  🎓 University:  admin@stanford.edu                                           │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DATA SUMMARY ────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  • 8 Applicants      (job seekers with profiles)                              │
+│  • 6 Employers       (companies posting jobs)                                 │
+│  • 5 Universities    (educational institutions)                               │
+│  • 12 Jobs           (various tech positions)                                 │
+│  • ~25 Applications  (with varied statuses)                                   │
+│  • 15 Verifications  (credential requests)                                    │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ALL TEST ACCOUNTS ───────────────────────────────────────────────────────────┐
+│                                                                                │
+│  APPLICANTS:                                                                   │
+│    john.doe@email.com          sarah.wilson@email.com                         │
+│    michael.chen@email.com      emily.brown@email.com                          │
+│    david.martinez@email.com    lisa.anderson@email.com                        │
+│    james.taylor@email.com      sophia.garcia@email.com                        │
+│                                                                                │
+│  EMPLOYERS:                                                                    │
+│    hr@techcorp.com             jobs@innovatesoft.com                          │
+│    careers@datastream.com      hiring@cloudnine.com                           │
+│    recruit@fintech.com         talent@greentech.com                           │
+│                                                                                │
+│  UNIVERSITIES:                                                                 │
+│    admin@stanford.edu          registrar@mit.edu                              │
+│    admin@berkeley.edu          records@harvard.edu                            │
+│    admin@caltech.edu                                                           │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ SAMPLE JOBS ─────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  • Senior Software Engineer      $120k-$180k  San Francisco, CA               │
+│  • Frontend Developer            $90k-$130k   Remote                          │
+│  • Data Scientist                $110k-$160k  New York, NY                    │
+│  • DevOps Engineer               $100k-$150k  Austin, TX                      │
+│  • Product Manager               $130k-$190k  Seattle, WA                     │
+│  • UX/UI Designer                $85k-$125k   Los Angeles, CA                 │
+│  • Backend Developer             $95k-$140k   Boston, MA                      │
+│  • Mobile App Developer          $90k-$135k   Chicago, IL                     │
+│  • QA Engineer                   $75k-$110k   Denver, CO                      │
+│  • Security Engineer             $115k-$170k  Washington, DC                  │
+│  • Machine Learning Engineer     $125k-$185k  San Francisco, CA               │
+│  • Technical Writer              $65k-$95k    Remote                          │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING ─────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  ❌ "No module named 'app'"                                                   │
+│     → Make sure you're in the backend directory                               │
+│                                                                                │
+│  ❌ "Database is locked"                                                      │
+│     → Stop Flask server (Ctrl+C) before seeding                               │
+│                                                                                │
+│  ❌ Import errors                                                             │
+│     → Run: pip install -r requirements.txt                                    │
+│                                                                                │
+│  ❌ Want fresh data                                                           │
+│     → Run: python seed_database.py --clear                                    │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DOCUMENTATION ───────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  📄 README_SEEDING.md          - Comprehensive guide                          │
+│  📄 SEEDING_INSTRUCTIONS.md    - Step-by-step instructions                    │
+│  📄 DATABASE_SEEDING_SUMMARY.md - Complete summary                            │
+│  📄 SEED_QUICK_REFERENCE.txt   - This file                                    │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  Need help? Check README_SEEDING.md for detailed documentation               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
