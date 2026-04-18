@@ -263,3 +263,12 @@ document.querySelectorAll('.inst-card').forEach((card, i) => {
   card.style.transition = `opacity 0.5s ${i * 0.07}s ease, transform 0.5s ${i * 0.07}s ease`;
   observer.observe(card);
 });
+
+// Wire arrow buttons to open modal
+document.querySelectorAll('.arrow-btn').forEach((btn, index) => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const card = btn.closest('.inst-card');
+    if (card) card.click();
+  });
+});

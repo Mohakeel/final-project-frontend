@@ -5,30 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CertiVerify - About</title>
   <link rel="stylesheet" href="style.css/About_Us.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700;900&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="nav-logo">CertiVerify</div>
+    <a href="Landing_Page.html" class="logo">CertiVerify</a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#">Directory</a></li>
-      <li><a href="#">Verify</a></li>
-      <li><a href="#" class="active">About</a></li>
-      <li><a href="#">Contact</a></li>
+      <li><a href="Landing_Page.html">Solutions</a></li>
+      <li><a href="Verify_Credential.html">Verify</a></li>
+      <li><a href="Our_Institutions.html">Institutions</a></li>
+      <li><a href="About_Us.html" class="active">About</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#" class="btn-signin">Sign In</a>
-      <a href="#" class="btn-primary">Create Account</a>
+      <a href="Login.html" class="sign-in">Sign In</a>
+      <a href="Register.html" class="btn-primary">Get Started</a>
     </div>
-    <button class="hamburger" id="hamburger">&#9776;</button>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <!-- HERO SECTION -->
   <section class="hero">
     <div class="hero-left">
       <span class="badge">Established 2024</span>
-      <h1>Establishing a new global standard for academic trust.</h1>
+      <h1 class="hero-title">Establishing a new global standard for <span class="accent">academic trust.</span></h1>
     </div>
     <div class="hero-right">
       <p>In an era of digital replication, CertiVerify provides the immutable ledger for academic achievement, ensuring that every credential carries the weight it deserves.</p>
@@ -114,8 +117,8 @@
         <h2>Ready to secure your institution's legacy?</h2>
         <p>Join the network of universities transforming academic trust with CertiVerify.</p>
         <div class="cta-buttons">
-          <a href="#" class="btn-white">Join the Network</a>
-          <a href="#" class="btn-outline-white">Contact Partnerships</a>
+          <a href="Register.html" class="btn-white">Join the Network</a>
+          <a href="Our_Institutions.html" class="btn-outline-white">Contact Partnerships</a>
         </div>
       </div>
     </div>
@@ -123,17 +126,28 @@
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div class="footer-left">
+    <div class="footer-brand">
       <div class="footer-logo">CertiVerify</div>
-      <p>&#169; 2024 CertiVerify. The Digital Notary for Academic Integrity. Dedicated to creating a world where every achievement is recognized and protected.</p>
+      <p>The global standard for academic and professional credentialing. Securing the future of verification through decentralized technology.</p>
+      <small>© 2024 CertiVerify. The Digital Notary for Academic Integrity.</small>
     </div>
-    <div class="footer-mid">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="Verify_Credential.html">Verify Credentials</a></li>
+        <li><a href="Our_Institutions.html">Institutions</a></li>
+        <li><a href="../Applicant_Frontend/App_Dashboard.html">For Applicants</a></li>
+        <li><a href="../Emp_Frontend/Employer_Dashboard.html">For Employers</a></li>
+      </ul>
     </div>
-    <div class="footer-right">
-      <a href="#">API Documentation</a>
-      <a href="#">Support</a>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="About_Us.html">About Us</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact Support</a></li>
+      </ul>
     </div>
   </footer>
 

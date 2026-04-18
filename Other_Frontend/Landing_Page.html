@@ -5,53 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CertiVerify</title>
   <link rel="stylesheet" href="style.css/Landing_Page.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700;900&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="nav-logo">CertiVerify</div>
-    <ul class="nav-links">
-      <li><a href="#" class="active">Solutions</a></li>
-      <li><a href="#">Verify</a></li>
-      <li><a href="#">Institutions</a></li>
-      <li><a href="#">About</a></li>
+    <a href="Landing_Page.html" class="logo">CertiVerify</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="Landing_Page.html" class="active">Solutions</a></li>
+      <li><a href="Verify_Credential.html">Verify</a></li>
+      <li><a href="Our_Institutions.html">Institutions</a></li>
+      <li><a href="About_Us.html">About</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#" class="btn-signin">Sign In</a>
-      <a href="#" class="btn-primary">Get Started</a>
+      <a href="Login.html" class="sign-in">Sign In</a>
+      <a href="Register.html" class="btn-primary">Get Started</a>
     </div>
-    <button class="hamburger" id="hamburger">&#9776;</button>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <!-- HERO SECTION -->
   <section class="hero">
     <div class="hero-left">
       <span class="badge">THE NEW STANDARD OF TRUST</span>
-      <h1>Redefining Digital Trust for <span class="highlight">Academic &amp; Career Credentials</span></h1>
+      <h1 class="hero-title">Redefining Digital Trust for <span class="accent">Academic &amp; Career Credentials</span></h1>
       <p>Instant, immutable verification for the modern era. We bridge the gap between achievement and credibility through state-of-the-art cryptographic validation.</p>
       <div class="hero-buttons">
-        <a href="#" class="btn-primary">Create Account</a>
-        <a href="#" class="btn-outline">Watch Demo</a>
+        <a href="Register.html" class="btn-primary">Create Account</a>
       </div>
     </div>
     <div class="hero-right">
-      <div class="verify-card">
-        <div class="verify-card-header">
-          <span class="shield-icon">&#9679;</span>
-          <strong>Instant Validation</strong>
-        </div>
-        <label>Credential Hash or ID</label>
-        <div class="verify-input-row">
-          <input type="text" placeholder="e.g. 0x7f8e...92c1" />
-          <button class="btn-primary small">Verify</button>
-        </div>
-        <div class="verify-footer">
-          <div class="avatars">
-            <span class="avatar a1"></span>
-            <span class="avatar a2"></span>
-          </div>
-          <span class="trusted-text">Trusted by 500+ Institutions</span>
+      <div class="hero-image-wrap">
+        <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80" alt="Academic credentials and graduation" class="hero-img" />
+        <div class="hero-img-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <span>Blockchain Verified</span>
         </div>
       </div>
     </div>
@@ -63,22 +54,28 @@
     <p class="section-sub">Secure academic integrity and streamline hiring with specialized tools for every stakeholder.</p>
     <div class="cards-grid">
       <div class="card">
-        <div class="card-icon user-icon">&#128100;</div>
+        <div class="card-icon user-icon">
+          <img src="graduated.png" alt="Applicant" class="card-img-icon" />
+        </div>
         <h3>Applicants</h3>
         <p>Verify your degrees and certifications once, share them forever with potential employers worldwide.</p>
-        <a href="#" class="card-link">Verify your credentials &#8594;</a>
+        <a href="../Applicant_Frontend/App_Dashboard.html" class="card-link">Verify your credentials &#8594;</a>
       </div>
       <div class="card">
-        <div class="card-icon employer-icon">&#128188;</div>
+        <div class="card-icon employer-icon">
+          <img src="office-building.png" alt="Employer" class="card-img-icon" />
+        </div>
         <h3>Employers</h3>
         <p>Instantly validate the background of your applicants with 100% confidence. Trust your hires.</p>
-        <a href="#" class="card-link">Partner with us &#8594;</a>
+        <a href="../Emp_Frontend/Employer_Dashboard.html" class="card-link">Partner with us &#8594;</a>
       </div>
       <div class="card">
-        <div class="card-icon uni-icon">&#127979;</div>
+        <div class="card-icon uni-icon">
+          <img src="university.png" alt="University" class="card-img-icon" />
+        </div>
         <h3>Universities</h3>
         <p>Secure your institutional records against fraud and digitize your diploma issuance pipeline.</p>
-        <a href="#" class="card-link">Secure your records &#8594;</a>
+        <a href="../Uni_Frontend/Uni_Dashboard.html" class="card-link">Secure your records &#8594;</a>
       </div>
     </div>
   </section>
@@ -123,8 +120,8 @@
     <h2>Ready to secure your digital identity?</h2>
     <p>Join thousands of professionals and institutions building a more transparent future of work and education.</p>
     <div class="cta-buttons">
-      <a href="#" class="btn-white">Register Now</a>
-      <a href="#" class="btn-outline-white">Contact Sales</a>
+      <a href="Register.html" class="btn-white">Register Now</a>
+      <a href="About_Us.html" class="btn-outline-white">Contact Sales</a>
     </div>
   </section>
 
@@ -132,44 +129,28 @@
   <footer class="footer">
     <div class="footer-brand">
       <div class="footer-logo">CertiVerify</div>
-      <p>The Digital Notary for Academic Integrity. We provide institutional-grade security for the future of professional credentials.</p>
-      <div class="footer-social">
-        <a href="#">&#9654;</a>
-        <a href="#">&#8599;</a>
-        <a href="#">&#43;</a>
-      </div>
+      <p>The global standard for academic and professional credentialing. Securing the future of verification through decentralized technology.</p>
+      <small>© 2024 CertiVerify. The Digital Notary for Academic Integrity.</small>
     </div>
     <div class="footer-col">
-      <h5>Platform</h5>
+      <h4>Platform</h4>
       <ul>
-        <li><a href="#">Verify Hash</a></li>
-        <li><a href="#">For Universities</a></li>
-        <li><a href="#">For Employers</a></li>
-        <li><a href="#">API Documentation</a></li>
+        <li><a href="Verify_Credential.html">Verify Credentials</a></li>
+        <li><a href="Our_Institutions.html">Institutions</a></li>
+        <li><a href="../Applicant_Frontend/App_Dashboard.html">For Applicants</a></li>
+        <li><a href="../Emp_Frontend/Employer_Dashboard.html">For Employers</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h5>Company</h5>
+      <h4>Company</h4>
       <ul>
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Security Whitepaper</a></li>
-        <li><a href="#">Press Kit</a></li>
-        <li><a href="#">Careers</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h5>Legal</h5>
-      <ul>
+        <li><a href="About_Us.html">About Us</a></li>
         <li><a href="#">Privacy Policy</a></li>
         <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">GDPR Compliance</a></li>
         <li><a href="#">Contact Support</a></li>
       </ul>
     </div>
   </footer>
-  <div class="footer-bottom">
-    <p>&#169; 2024 CertiVerify. The Digital Notary for Academic Integrity.</p>
-  </div>
 
   <script src="index.js/Landing_Page.js"></script>
 </body>

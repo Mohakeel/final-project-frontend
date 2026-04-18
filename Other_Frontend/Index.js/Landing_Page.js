@@ -1,6 +1,6 @@
 // ===================== HAMBURGER MENU =====================
 const hamburger = document.getElementById('hamburger');
-const navLinks = document.querySelector('.nav-links');
+const navLinks = document.getElementById('navLinks');
 const navActions = document.querySelector('.nav-actions');
 
 hamburger.addEventListener('click', () => {
@@ -14,55 +14,8 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ===================== SMOOTH SCROLL =====================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-});
-
-// ===================== VERIFY BUTTON =====================
-const verifyBtn = document.querySelector('.verify-input-row .btn-primary');
-const verifyInput = document.querySelector('.verify-input-row input');
-
-if (verifyBtn && verifyInput) {
-  verifyBtn.addEventListener('click', () => {
-    const value = verifyInput.value.trim();
-    if (!value) {
-      verifyInput.style.borderColor = '#e24b4a';
-      verifyInput.placeholder = 'Please enter a credential hash';
-      setTimeout(() => {
-        verifyInput.style.borderColor = '';
-        verifyInput.placeholder = 'e.g. 0x7f8e...92c1';
-      }, 2000);
-      return;
-    }
-    verifyBtn.textContent = '...';
-    verifyBtn.disabled = true;
-    setTimeout(() => {
-      verifyBtn.textContent = '✓ Valid';
-      verifyBtn.style.background = '#16a34a';
-      setTimeout(() => {
-        verifyBtn.textContent = 'Verify';
-        verifyBtn.style.background = '';
-        verifyBtn.disabled = false;
-        verifyInput.value = '';
-      }, 2500);
-    }, 1200);
-  });
-
-  // Allow Enter key in input
-  verifyInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') verifyBtn.click();
-  });
-}
-
 // ===================== SCROLL REVEAL ANIMATION =====================
-const revealElements = document.querySelectorAll('.card, .feature-item, .hero-left, .verify-card');
+const revealElements = document.querySelectorAll('.card, .feature-item, .hero-left, .hero-image-wrap');
 
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {

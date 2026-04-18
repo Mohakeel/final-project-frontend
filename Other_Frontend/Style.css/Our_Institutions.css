@@ -67,7 +67,7 @@ body {
 }
 .nav-links a:hover { color: var(--text); }
 .nav-links a.active {
-  color: var(--text);
+  color: var(--blue);
   font-weight: 600;
   border-bottom: 2px solid var(--blue);
   padding-bottom: 2px;
@@ -537,66 +537,39 @@ body {
 .footer {
   background: var(--white);
   border-top: 1px solid var(--border);
-  padding: 56px 80px 0;
+  padding: 60px 80px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 60px;
-  position: relative;
-}
-
-.footer-bottom {
-  grid-column: 1 / -1;
-  border-top: 1px solid var(--border);
-  padding: 20px 0;
-  margin-top: 16px;
-}
-
-.footer-bottom small {
-  font-size: 0.78rem;
-  color: #b0b7c3;
 }
 
 .footer-logo {
   font-family: var(--font-head);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 900;
   color: var(--text);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .footer-brand p {
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   color: var(--muted);
   line-height: 1.7;
   max-width: 320px;
   margin-bottom: 16px;
 }
 
-.footer-icons {
-  display: flex;
-  gap: 10px;
+.footer-brand small {
+  font-size: 0.78rem;
+  color: #b0b7c3;
 }
-
-.footer-icon {
-  background: var(--blue-light);
-  border: 1px solid rgba(59,91,219,0.15);
-  border-radius: 8px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.footer-icon:hover { background: #d0d9f8; }
 
 .footer-col h4 {
-  font-size: 0.83rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--blue);
   margin-bottom: 14px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -604,11 +577,15 @@ body {
 .footer-col ul li { margin-bottom: 10px; }
 .footer-col ul li a {
   text-decoration: none;
-  font-size: 0.87rem;
+  font-size: 0.88rem;
   color: var(--muted);
   transition: color 0.2s;
 }
 .footer-col ul li a:hover { color: var(--blue); }
+
+@media (max-width: 768px) {
+  .footer { grid-template-columns: 1fr; gap: 32px; padding: 48px 24px; }
+}
 
 /* ========================
    MODAL
@@ -736,9 +713,8 @@ body {
   .page-header { padding: 40px 32px 32px; }
   .search-section { padding: 0 32px 28px; }
   .cards-section { padding: 0 32px 64px; }
-  .footer { padding: 48px 32px 0; grid-template-columns: 1fr 1fr; }
+  .footer { padding: 48px 32px; grid-template-columns: 1fr 1fr; }
   .footer-brand { grid-column: 1 / -1; }
-  .footer-bottom { grid-column: 1 / -1; }
 }
 
 @media (max-width: 700px) {
