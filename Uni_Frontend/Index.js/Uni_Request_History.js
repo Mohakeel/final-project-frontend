@@ -1,6 +1,14 @@
-import { getAllRequests, processVerification, logout, removeToken, removeRole } from '../../frontend/api.js';
+import { getAllRequests, processVerification, logout, removeToken, removeRole, getName, setName, getUniProfile } from '../../frontend/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Load navbar username ──
+  const userNameEl = document.querySelector('.user-name');
+  const storedName = getName();
+  if (userNameEl && storedName) userNameEl.textContent = storedName;
+  getUniProfile().then(p => {
+    if (userNameEl && p.uni_name) { userNameEl.textContent = p.uni_name; setName(p.uni_name); }
+  }).catch(() => {});
 
   const PAGE_SIZE = 10;
   let currentPage = 1;
@@ -100,10 +108,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function actionHTML(r) {
     if (r.status === 'VERIFIED')
-      return `<button class="btn-view" data-id="${r.id}" title="View details">👁</button>`;
+      return `<button class="btn-view" data-id="${r.id}" title="View details">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>`;
     if (r.status === 'REJECTED')
-      return `<button class="btn-notes" data-id="${r.id}" title="View notes">≡✎</button>`;
-    return `<button class="btn-process" data-id="${r.id}">Process</button>`;
+      return `<button class="btn-notes" data-id="${r.id}" title="View notes">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </button>`;
+    // PENDING — show approve + reject
+    return `
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn-approve-sm" data-id="${r.id}" title="Approve" style="background:#dcfce7;color:#16a34a;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;">✓ Approve</button>
+        <button class="btn-reject-sm" data-id="${r.id}" title="Reject" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;">✗ Reject</button>
+      </div>`;
   }
 
   // ── Pagination ──
@@ -154,20 +171,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-view, .btn-notes').forEach(btn => {
       btn.addEventListener('click', () => openDetailModal(parseInt(btn.dataset.id)));
     });
-    document.querySelectorAll('.btn-process').forEach(btn => {
+    document.querySelectorAll('.btn-approve-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const r = allData.find(x => x.id === parseInt(btn.dataset.id));
+        if (!r || !confirm(`Approve ${r.student_name}'s credential?`)) return;
+        try {
+          await processVerification(r.id, 'VERIFIED');
+          r.status = 'VERIFIED';
+          renderTable();
+          showToast(`✓ ${r.student_name}'s credential approved.`);
+        } catch (err) { showToast('Error: ' + err.message); }
+      });
+    });
+    document.querySelectorAll('.btn-reject-sm').forEach(btn => {
       btn.addEventListener('click', async () => {
         const r = allData.find(x => x.id === parseInt(btn.dataset.id));
         if (!r) return;
-        if (!confirm(`Process ${r.student_name}'s pending request?`)) return;
+        const reason = prompt('Enter rejection reason (optional):') || 'No reason provided';
+        if (!confirm(`Reject ${r.student_name}'s credential?`)) return;
         try {
-          await processVerification(r.id, 'VERIFIED');
-          r.status    = 'VERIFIED';
-          r.cert_hash = '(generated)';
+          await processVerification(r.id, 'REJECTED', reason);
+          r.status = 'REJECTED';
           renderTable();
-          showToast(`✓ ${r.student_name}'s credential has been processed.`);
-        } catch (err) {
-          showToast('Error: ' + err.message);
-        }
+          showToast(`✗ ${r.student_name}'s credential rejected.`);
+        } catch (err) { showToast('Error: ' + err.message); }
       });
     });
   }

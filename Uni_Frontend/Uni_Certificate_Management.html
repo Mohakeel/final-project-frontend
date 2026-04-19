@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css/Uni_Certificate_Management.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <title>CertiVerify – Certificate Management</title>
 </head>
 <body>
@@ -66,7 +69,7 @@
           </button>
           <a href="Uni_Profile.html" class="user-info">
             <div>
-              <div class="user-name">Dr. Jane Doe</div>
+              <div class="user-name">Loading...</div>
               <div class="user-role">Academic Registrar</div>
             </div>
             <div class="avatar">JD</div>
@@ -103,6 +106,9 @@
           <label class="field-label">Student Name</label>
           <input class="field-input" type="text" placeholder="e.g. Elena Rodriguez" id="studentName"/>
 
+          <label class="field-label">Certificate ID <span style="font-weight:400;color:#888;">(Registration / Certificate Number)</span></label>
+          <input class="field-input" type="text" placeholder="e.g. CERT-2024-001" id="certId"/>
+
           <div class="field-row">
             <div>
               <label class="field-label">Degree Program</label>
@@ -112,14 +118,6 @@
               <label class="field-label">Graduation Year</label>
               <input class="field-input" type="text" placeholder="2024" id="gradYear"/>
             </div>
-          </div>
-
-          <label class="field-label">Certificate File (PDF)</label>
-          <div class="drop-zone" id="dropZone">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <p>Drop files here or <span class="browse-link" id="browseBtn">browse</span></p>
-            <input type="file" id="fileInput" accept=".pdf" hidden/>
-            <div id="fileName" class="file-name"></div>
           </div>
 
           <button class="btn-primary" id="mintBtn">Mint &amp; Verify Certificate</button>

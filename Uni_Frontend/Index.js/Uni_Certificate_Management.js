@@ -1,16 +1,63 @@
-// ─── DATA ───────────────────────────────────────────────────────────
-const allCerts = [
-  { initials: 'JA', color: '#dbeafe', textColor: '#1e40af', name: 'James Anderson', hash: '0x71c...3e21', degree: 'MBA Global Finance', classOf: 'Class of 2023', status: 'verified' },
-  { initials: 'SK', color: '#ede9fe', textColor: '#5b21b6', name: 'Sarah Kurosawa',  hash: '0x92b...ff1a', degree: 'B.Eng. Robotics',    classOf: 'Class of 2024', status: 'pending'  },
-  { initials: 'LW', color: '#d1fae5', textColor: '#065f46', name: 'Liam Walker',      hash: '0x44d...88c2', degree: 'M.A. Modern Literature', classOf: 'Class of 2022', status: 'verified' },
-  { initials: 'AM', color: '#fce7f3', textColor: '#9d174d', name: 'Aisha Mwangi',    hash: '0x31e...a0f4', degree: 'B.Sc. Data Science',  classOf: 'Class of 2023', status: 'verified' },
-  { initials: 'CR', color: '#fef3c7', textColor: '#92400e', name: 'Carlos Rivera',   hash: '0x88a...c2e1', degree: 'Ph.D. Bioinformatics', classOf: 'Class of 2021', status: 'pending'  },
-  { initials: 'YT', color: '#e0f2fe', textColor: '#0369a1', name: 'Yuki Tanaka',     hash: '0x5d9...b7a3', degree: 'B.Arch. Urban Design', classOf: 'Class of 2024', status: 'verified' },
-];
+import { getCertificates, createCertificate, bulkUploadCertificates, deleteCertificate, logout, removeToken, removeRole, getName, setName, getUniProfile } from '../../frontend/api.js';
 
-const PAGE_SIZE = 3;
+// ─── DATA ───────────────────────────────────────────────────────────
+let allCerts = [];
+const PAGE_SIZE = 10;
 let currentPage = 1;
-let filteredCerts = [...allCerts];
+let filteredCerts = [];
+
+// ─── Load and display user name ──
+document.addEventListener('DOMContentLoaded', async () => {
+  const userNameEl = document.querySelector('.user-name');
+  const storedName = getName();
+  if (userNameEl && storedName) userNameEl.textContent = storedName;
+  
+  try {
+    const profile = await getUniProfile();
+    if (userNameEl && profile.uni_name) {
+      userNameEl.textContent = profile.uni_name;
+      setName(profile.uni_name);
+    }
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+  }
+  
+  // Load certificates
+  await loadCertificates();
+});
+
+// ─── Load Certificates ──
+async function loadCertificates() {
+  try {
+    const certs = await getCertificates();
+    allCerts = certs.map(c => ({
+      id: c.id,
+      initials: (c.student_name || 'UN').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+      color: getRandomColor().bg,
+      textColor: getRandomColor().text,
+      name: c.student_name,
+      certId: c.certificate_id || '—',
+      hash: c.cert_hash.slice(0, 6) + '...' + c.cert_hash.slice(-4),
+      fullHash: c.cert_hash,
+      degree: c.degree,
+      classOf: `Class of ${c.graduation_year}`,
+      status: c.status.toLowerCase()
+    }));
+    filteredCerts = [...allCerts];
+    renderTable();
+  } catch (err) {
+    showToast('Failed to load certificates: ' + err.message);
+  }
+}
+
+function getRandomColor() {
+  const colors = [
+    { bg: '#dbeafe', text: '#1e40af' }, { bg: '#ede9fe', text: '#5b21b6' },
+    { bg: '#d1fae5', text: '#065f46' }, { bg: '#fce7f3', text: '#9d174d' },
+    { bg: '#fef3c7', text: '#92400e' }, { bg: '#e0f2fe', text: '#0369a1' },
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
 
 // ─── RENDER TABLE ────────────────────────────────────────────────────
 function renderTable() {
@@ -18,31 +65,47 @@ function renderTable() {
   const start = (currentPage - 1) * PAGE_SIZE;
   const slice = filteredCerts.slice(start, start + PAGE_SIZE);
 
-  tbody.innerHTML = slice.map(c => `
-    <tr>
-      <td>
-        <div class="student-cell">
-          <div class="stu-avatar" style="background:${c.color};color:${c.textColor}">${c.initials}</div>
-          <div>
-            <div class="stu-name">${c.name}</div>
-            <div class="stu-hash">HASH: ${c.hash}</div>
+  if (slice.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#aaa;">No certificates found.</td></tr>';
+  } else {
+    tbody.innerHTML = slice.map(c => `
+      <tr>
+        <td>
+          <div class="student-cell">
+            <div class="stu-avatar" style="background:${c.color};color:${c.textColor}">${c.initials}</div>
+            <div>
+              <div class="stu-name">${c.name}</div>
+              <div class="stu-hash">CERT ID: ${c.certId}</div>
+            </div>
           </div>
-        </div>
-      </td>
-      <td>
-        <div class="deg-name">${c.degree}</div>
-        <div class="deg-class">${c.classOf}</div>
-      </td>
-      <td><span class="badge ${c.status}">${c.status === 'verified' ? 'Verified' : 'Pending'}</span></td>
-      <td>
-        <div class="action-btns">
-          <button class="action-btn" title="View" onclick="showToast('Viewing ${c.name}')"><i class="fa-regular fa-eye"></i></button>
-          <button class="action-btn" title="Edit" onclick="showToast('Editing ${c.name}')"><i class="fa-solid fa-pen-to-square"></i></button>
-          <button class="action-btn del" title="Delete" onclick="deleteCert('${c.hash}')"><i class="fa-solid fa-trash-can"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+        </td>
+        <td>
+          <div class="deg-name">${c.degree}</div>
+          <div class="deg-class">${c.classOf}</div>
+        </td>
+        <td><span class="badge ${c.status}">${c.status === 'verified' ? 'Verified' : 'Pending'}</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn view-btn" title="View SHA-256 Hash" data-hash="${c.fullHash}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="action-btn del" title="Delete" data-id="${c.id}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    
+    // Bind delete buttons
+    document.querySelectorAll('.action-btn.del').forEach(btn => {
+      btn.addEventListener('click', () => deleteCertHandler(parseInt(btn.dataset.id)));
+    });
+    // Bind view buttons
+    document.querySelectorAll('.action-btn.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => showToast('SHA-256: ' + btn.dataset.hash));
+    });
+  }
 
   document.getElementById('showingLabel').textContent =
     `Showing ${Math.min(slice.length, PAGE_SIZE)} of ${filteredCerts.length.toLocaleString()} certificates`;
@@ -88,16 +151,23 @@ document.getElementById('searchInput').addEventListener('input', e => {
 });
 
 // ─── DELETE ──────────────────────────────────────────────────────────
-function deleteCert(hash) {
-  const idx = filteredCerts.findIndex(c => c.hash === hash);
-  if (idx === -1) return;
-  filteredCerts.splice(idx, 1);
-  const ai = allCerts.findIndex(c => c.hash === hash);
-  if (ai !== -1) allCerts.splice(ai, 1);
-  const total = Math.ceil(filteredCerts.length / PAGE_SIZE);
-  if (currentPage > total) currentPage = Math.max(1, total);
-  renderTable();
-  showToast('Certificate removed');
+async function deleteCertHandler(id) {
+  const cert = allCerts.find(c => c.id === id);
+  if (!cert) return;
+  
+  if (!confirm(`Delete certificate for ${cert.name}?`)) return;
+  
+  try {
+    await deleteCertificate(id);
+    allCerts = allCerts.filter(c => c.id !== id);
+    filteredCerts = filteredCerts.filter(c => c.id !== id);
+    const total = Math.ceil(filteredCerts.length / PAGE_SIZE);
+    if (currentPage > total) currentPage = Math.max(1, total);
+    renderTable();
+    showToast('Certificate removed');
+  } catch (err) {
+    showToast('Error: ' + err.message);
+  }
 }
 
 // ─── FILE UPLOAD ─────────────────────────────────────────────────────
@@ -121,11 +191,14 @@ dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
-  if (file) fileNameEl.textContent = '📎 ' + file.name;
+  if (file) {
+    fileInput.files = e.dataTransfer.files;
+    fileNameEl.textContent = '📎 ' + file.name;
+  }
 });
 
 // ─── MINT FORM ───────────────────────────────────────────────────────
-document.getElementById('mintBtn').addEventListener('click', () => {
+document.getElementById('mintBtn').addEventListener('click', async () => {
   const name = document.getElementById('studentName').value.trim();
   const deg  = document.getElementById('degreeProgram').value.trim();
   const year = document.getElementById('gradYear').value.trim();
@@ -135,27 +208,35 @@ document.getElementById('mintBtn').addEventListener('click', () => {
     return;
   }
 
-  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const colors = [
-    { bg: '#dbeafe', text: '#1e40af' }, { bg: '#ede9fe', text: '#5b21b6' },
-    { bg: '#d1fae5', text: '#065f46' }, { bg: '#fce7f3', text: '#9d174d' },
-    { bg: '#fef3c7', text: '#92400e' }, { bg: '#e0f2fe', text: '#0369a1' },
-  ];
-  const c = colors[Math.floor(Math.random() * colors.length)];
-  const hash = '0x' + Math.random().toString(16).slice(2, 6) + '...' + Math.random().toString(16).slice(2, 6);
+  const mintBtn = document.getElementById('mintBtn');
+  mintBtn.textContent = 'Minting...';
+  mintBtn.disabled = true;
 
-  const newCert = { initials, color: c.bg, textColor: c.text, name, hash, degree: deg, classOf: `Class of ${year}`, status: 'pending' };
-  allCerts.unshift(newCert);
-  filteredCerts = [...allCerts];
-  currentPage = 1;
-  renderTable();
+  try {
+    const result = await createCertificate({
+      student_name: name,
+      degree: deg,
+      graduation_year: parseInt(year),
+      certificate_id: document.getElementById('certId')?.value?.trim() || undefined
+    });
 
-  document.getElementById('studentName').value = '';
-  document.getElementById('degreeProgram').value = '';
-  document.getElementById('gradYear').value = '';
-  fileNameEl.textContent = '';
-
-  showToast(`✅ Certificate minted for ${name}`);
+    showToast(`✅ Certificate minted for ${name}`);
+    
+    // Clear form
+    document.getElementById('studentName').value = '';
+    document.getElementById('degreeProgram').value = '';
+    document.getElementById('gradYear').value = '';
+    fileNameEl.textContent = '';
+    
+    // Reload certificates
+    await loadCertificates();
+    
+  } catch (err) {
+    showToast('Error: ' + err.message);
+  } finally {
+    mintBtn.textContent = 'Mint & Verify Certificate';
+    mintBtn.disabled = false;
+  }
 });
 
 // ─── FAB ─────────────────────────────────────────────────────────────
@@ -167,7 +248,7 @@ document.getElementById('fabBtn').addEventListener('click', () => {
 // ─── EXPORT CSV ──────────────────────────────────────────────────────
 document.getElementById('exportBtn').addEventListener('click', () => {
   const rows = [['Name', 'Hash', 'Degree', 'Class', 'Status'],
-    ...filteredCerts.map(c => [c.name, c.hash, c.degree, c.classOf, c.status])];
+    ...filteredCerts.map(c => [c.name, c.fullHash, c.degree, c.classOf, c.status])];
   const csv = rows.map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -185,17 +266,15 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────
-renderTable();
-
-// Sign out
+// ─── Sign out ──
 const signOutBtnUni = document.getElementById('signOutBtn');
 if (signOutBtnUni) {
-  signOutBtnUni.addEventListener('click', function(e) {
+  signOutBtnUni.addEventListener('click', async function(e) {
     e.preventDefault();
-    if (confirm('Are you sure you want to sign out?')) {
-      window.location.href = '../Other_Frontend/Login.html';
-    }
+    try { await logout(); } catch (_) {}
+    removeToken();
+    removeRole();
+    window.location.href = '../Other_Frontend/Login.html';
   });
 }
 
@@ -220,6 +299,8 @@ if (signOutBtnUni) {
   const bulkModalDesc  = document.getElementById('bulkModalDesc');
   const bulkModalOk    = document.getElementById('bulkModalOk');
 
+  let currentBulkFile = null;
+
   function showBulkModal(icon, title, desc) {
     bulkModalIcon.textContent  = icon;
     bulkModalTitle.textContent = title;
@@ -230,9 +311,9 @@ if (signOutBtnUni) {
 
   // Download template
   templateBtn.addEventListener('click', () => {
-    const csv = 'Student Name,Student ID,Degree Program,Graduation Year,Certificate Hash\n'
-              + 'Jane Smith,STU-001,B.Sc. Computer Science,2024,\n'
-              + 'John Doe,STU-002,M.A. Economics,2024,\n';
+    const csv = 'Student Name,Certificate ID,Degree Program,Graduation Year\n'
+              + 'Jane Smith,CERT-2024-001,B.Sc. Computer Science,2024\n'
+              + 'John Doe,CERT-2024-002,M.A. Economics,2024\n';
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
       download: 'certificate_upload_template.csv'
@@ -262,6 +343,7 @@ if (signOutBtnUni) {
   // Clear
   bulkClearBtn.addEventListener('click', () => {
     bulkFileInput.value = '';
+    currentBulkFile = null;
     bulkFileInfo.textContent = '';
     bulkPreview.style.display = 'none';
     bulkPreviewHead.innerHTML = '';
@@ -269,12 +351,46 @@ if (signOutBtnUni) {
   });
 
   // Import
-  bulkImportBtn.addEventListener('click', () => {
-    const rows = bulkPreviewBody.querySelectorAll('tr').length;
-    if (!rows) return;
-    showBulkModal('✅', 'Import Successful',
-      `${rows} certificate record${rows !== 1 ? 's' : ''} have been queued for blockchain minting. Track progress in the table above.`
-    );
+  bulkImportBtn.addEventListener('click', async () => {
+    if (!currentBulkFile) {
+      showToast('⚠️ No file selected');
+      return;
+    }
+    
+    bulkImportBtn.textContent = 'Uploading...';
+    bulkImportBtn.disabled = true;
+    
+    try {
+      const result = await bulkUploadCertificates(currentBulkFile);
+      
+      if (result.errors && result.errors.length > 0) {
+        // Show detailed errors
+        const errorList = result.errors.slice(0, 5).join('\n');
+        const moreErrors = result.errors.length > 5 ? `\n... and ${result.errors.length - 5} more errors` : '';
+        showBulkModal('⚠️', 'Import Completed with Errors',
+          `${result.created} certificate${result.created !== 1 ? 's' : ''} added successfully.\n\n${result.errors.length} error${result.errors.length !== 1 ? 's' : ''}:\n${errorList}${moreErrors}`
+        );
+      } else {
+        showBulkModal('✅', 'Import Successful',
+          `${result.created} certificate record${result.created !== 1 ? 's' : ''} have been added to the database.`
+        );
+      }
+      
+      // Reload certificates
+      await loadCertificates();
+      
+      // Clear form
+      bulkFileInput.value = '';
+      currentBulkFile = null;
+      bulkFileInfo.textContent = '';
+      bulkPreview.style.display = 'none';
+      
+    } catch (err) {
+      showBulkModal('⚠️', 'Upload Failed', err.message);
+    } finally {
+      bulkImportBtn.textContent = 'Import to Database';
+      bulkImportBtn.disabled = false;
+    }
   });
 
   function handleBulkFile(file) {
@@ -283,6 +399,8 @@ if (signOutBtnUni) {
       showBulkModal('⚠️', 'Unsupported File', 'Please upload a .csv, .xls, or .xlsx file.');
       return;
     }
+    
+    currentBulkFile = file;
     bulkFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
 
     if (ext === 'csv') {
@@ -290,8 +408,19 @@ if (signOutBtnUni) {
       reader.onload = e => parseAndRender(e.target.result);
       reader.readAsText(file);
     } else {
+      // Excel file - show placeholder
       renderExcelPlaceholder(file.name);
     }
+  }
+
+  function renderExcelPlaceholder(filename) {
+    const headers = ['Student Name', 'Student ID', 'Degree Program', 'Graduation Year', 'Certificate Hash'];
+    bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    bulkPreviewBody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:#888;padding:1.5rem;">
+      Excel preview not available in browser — <strong>${filename}</strong> is ready to import.
+    </td></tr>`;
+    bulkPreviewCount.textContent = 'Excel file loaded';
+    bulkPreview.style.display = 'block';
   }
 
   function parseAndRender(text) {
@@ -311,16 +440,6 @@ if (signOutBtnUni) {
 
     const total = rows.length;
     bulkPreviewCount.textContent = `${total} record${total !== 1 ? 's' : ''} found${total > 10 ? ' (showing first 10)' : ''}`;
-    bulkPreview.style.display = 'block';
-  }
-
-  function renderExcelPlaceholder(filename) {
-    const headers = ['Student Name', 'Student ID', 'Degree Program', 'Graduation Year', 'Certificate Hash'];
-    bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
-    bulkPreviewBody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:#888;padding:1.5rem;">
-      Excel preview not available in browser — <strong>${filename}</strong> is ready to import.
-    </td></tr>`;
-    bulkPreviewCount.textContent = 'Excel file loaded';
     bulkPreview.style.display = 'block';
   }
 })();

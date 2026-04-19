@@ -1,6 +1,14 @@
-import { getPendingRequests, processVerification, logout, removeToken, removeRole } from '../../frontend/api.js';
+import { getPendingRequests, processVerification, logout, removeToken, removeRole, getName, setName, getUniProfile } from '../../frontend/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Load navbar username ──
+  const userNameEl = document.querySelector('.user-name');
+  const storedName = getName();
+  if (userNameEl && storedName) userNameEl.textContent = storedName;
+  getUniProfile().then(p => {
+    if (userNameEl && p.uni_name) { userNameEl.textContent = p.uni_name; setName(p.uni_name); }
+  }).catch(() => {});
 
   const PAGE_SIZE = 3;
   let currentPage = 1;
