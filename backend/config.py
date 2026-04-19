@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 # base directory of the backend package (used to build absolute paths)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -16,4 +17,5 @@ class Config:
     JWT_TOKEN_LOCATION = ['headers']
     JWT_HEADER_NAME = 'Authorization'
     JWT_HEADER_TYPE = 'Bearer'
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)  # Stay logged in for 7 days
     UPLOAD_FOLDER = 'uploads/resumes'

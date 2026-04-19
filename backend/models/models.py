@@ -83,3 +83,16 @@ class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Certificate(db.Model):
+    """Stores issued certificates by universities"""
+    id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('university.id'), nullable=False)
+    student_name = db.Column(db.String(100), nullable=False)
+    certificate_id = db.Column(db.String(50), nullable=True)   # Registration / Certificate ID
+    degree = db.Column(db.String(100), nullable=False)
+    graduation_year = db.Column(db.Integer, nullable=False)
+    cert_hash = db.Column(db.String(64), unique=True, nullable=False)
+    status = db.Column(db.String(20), default='VERIFIED')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

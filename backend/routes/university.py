@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.models import db, VerificationRequest, University, User
+from models.models import db, VerificationRequest, University, User, Certificate
 from utils.helpers import generate_hash
 from utils.decorators import role_required
+import csv
+from io import StringIO, BytesIO
+import openpyxl
 
 university_bp = Blueprint('university_bp', __name__)
 
@@ -167,3 +170,239 @@ def verify_certificate_by_hash(cert_hash):
         "issued_date": req.updated_at.isoformat() if req.updated_at else None,
         "message": "Certificate verified successfully"
     }), 200
+
+# ── Certificate Management ──
+
+@university_bp.route('/certificates', methods=['GET'])
+@jwt_required()
+@role_required('university')
+def get_certificates():
+    """Get all certificates issued by this university"""
+    user_id = int(get_jwt_identity())
+    university = University.query.filter_by(user_id=user_id).first()
+
+    if not university:
+        return jsonify({"error": "University profile not found"}), 404
+
+    certs = Certificate.query.filter_by(university_id=university.id).all()
+    
+    output = []
+    for cert in certs:
+        output.append({
+            "id": cert.id,
+            "student_name": cert.student_name,
+            "certificate_id": cert.certificate_id,
+            "degree": cert.degree,
+            "graduation_year": cert.graduation_year,
+            "cert_hash": cert.cert_hash,
+            "status": cert.status,
+            "created_at": cert.created_at.isoformat() if cert.created_at else None
+        })
+    
+    return jsonify(output), 200
+
+@university_bp.route('/certificates', methods=['POST'])
+@jwt_required()
+@role_required('university')
+def create_certificate():
+    """Create a single certificate"""
+    user_id = int(get_jwt_identity())
+    university = University.query.filter_by(user_id=user_id).first()
+
+    if not university:
+        return jsonify({"error": "University profile not found"}), 404
+
+    data = request.get_json()
+
+    student_name = data.get('student_name', '').strip()
+    degree = data.get('degree', '').strip()
+    graduation_year = data.get('graduation_year')
+    certificate_id = data.get('certificate_id', '').strip()
+
+    if not student_name or not degree or not graduation_year:
+        return jsonify({"error": "student_name, degree, and graduation_year are required"}), 400
+
+    # Generate SHA-256 hash: name | university | degree | year | certificate_id
+    cert_hash = generate_hash(
+        student_name,
+        university.uni_name or 'University',
+        degree,
+        int(graduation_year),
+        certificate_id or None
+    )
+
+    # Check duplicate
+    if Certificate.query.filter_by(cert_hash=cert_hash).first():
+        return jsonify({"error": "A certificate with identical details already exists"}), 409
+
+    cert = Certificate(
+        university_id=university.id,
+        student_name=student_name,
+        certificate_id=certificate_id if certificate_id else None,
+        degree=degree,
+        graduation_year=int(graduation_year),
+        cert_hash=cert_hash,
+        status='VERIFIED'
+    )
+    
+    db.session.add(cert)
+    db.session.commit()
+    
+    return jsonify({
+        "message": "Certificate created successfully",
+        "cert_hash": cert_hash,
+        "id": cert.id
+    }), 201
+
+@university_bp.route('/certificates/bulk', methods=['POST'])
+@jwt_required()
+@role_required('university')
+def bulk_upload_certificates():
+    """Bulk upload certificates from CSV or Excel"""
+    user_id = int(get_jwt_identity())
+    university = University.query.filter_by(user_id=user_id).first()
+
+    if not university:
+        return jsonify({"error": "University profile not found"}), 404
+
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files['file']
+    filename = file.filename.lower()
+    
+    if not (filename.endswith('.csv') or filename.endswith('.xlsx') or filename.endswith('.xls')):
+        return jsonify({"error": "Only CSV and Excel files are supported"}), 400
+    
+    try:
+        created_count = 0
+        errors = []
+        
+        # Parse file based on type
+        if filename.endswith('.csv'):
+            # CSV parsing
+            stream = StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_reader = csv.DictReader(stream)
+            rows = list(csv_reader)
+        else:
+            # Excel parsing
+            workbook = openpyxl.load_workbook(BytesIO(file.read()))
+            sheet = workbook.active
+            
+            # Get headers from first row
+            headers = [str(cell.value).strip() if cell.value else '' for cell in sheet[1]]
+            
+            # Validate headers
+            required_headers = ['Student Name', 'Degree Program', 'Graduation Year']
+            missing_headers = [h for h in required_headers if h not in headers]
+            if missing_headers:
+                return jsonify({
+                    "error": f"Missing required columns: {', '.join(missing_headers)}. Expected: Student Name, Student ID, Degree Program, Graduation Year, Certificate Hash"
+                }), 400
+            
+            # Get data rows
+            rows = []
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                # Skip completely empty rows
+                if all(cell is None or str(cell).strip() == '' for cell in row):
+                    continue
+                    
+                row_dict = {}
+                for i, header in enumerate(headers):
+                    if i < len(row) and header:
+                        row_dict[header] = row[i]
+                rows.append(row_dict)
+        
+        if len(rows) == 0:
+            return jsonify({"error": "No data rows found in file"}), 400
+        
+        # Process rows
+        for row_num, row in enumerate(rows, start=2):
+            try:
+                student_name = str(row.get('Student Name', '') or '').strip()
+                certificate_id = str(row.get('Certificate ID', '') or row.get('Student ID', '') or '').strip()
+                degree = str(row.get('Degree Program', '') or '').strip()
+                grad_year_raw = row.get('Graduation Year', '')
+                
+                # Handle graduation year
+                if not grad_year_raw or str(grad_year_raw).strip() == '':
+                    errors.append(f"Row {row_num}: Missing graduation year")
+                    continue
+                
+                try:
+                    grad_year = int(float(str(grad_year_raw)))
+                except (ValueError, TypeError):
+                    errors.append(f"Row {row_num}: Invalid graduation year '{grad_year_raw}' (must be a number)")
+                    continue
+                
+                if not student_name:
+                    errors.append(f"Row {row_num}: Missing Student Name")
+                    continue
+                    
+                if not degree:
+                    errors.append(f"Row {row_num}: Missing Degree Program")
+                    continue
+                
+                # Generate SHA-256 hash: name | university | degree | year | certificate_id
+                cert_hash = generate_hash(
+                    student_name,
+                    university.uni_name or 'University',
+                    degree,
+                    grad_year,
+                    certificate_id or None
+                )
+                
+                # Check if certificate already exists
+                existing = Certificate.query.filter_by(cert_hash=cert_hash).first()
+                if existing:
+                    errors.append(f"Row {row_num}: Duplicate - {student_name} already has this certificate")
+                    continue
+                
+                cert = Certificate(
+                    university_id=university.id,
+                    student_name=student_name,
+                    certificate_id=certificate_id if certificate_id else None,
+                    degree=degree,
+                    graduation_year=grad_year,
+                    cert_hash=cert_hash,
+                    status='VERIFIED'
+                )
+                
+                db.session.add(cert)
+                created_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            "message": f"Bulk upload completed",
+            "created": created_count,
+            "errors": errors
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to process file: {str(e)}"}), 500
+
+@university_bp.route('/certificates/<int:cert_id>', methods=['DELETE'])
+@jwt_required()
+@role_required('university')
+def delete_certificate(cert_id):
+    """Delete a certificate"""
+    user_id = int(get_jwt_identity())
+    university = University.query.filter_by(user_id=user_id).first()
+
+    if not university:
+        return jsonify({"error": "University profile not found"}), 404
+
+    cert = Certificate.query.filter_by(id=cert_id, university_id=university.id).first()
+    
+    if not cert:
+        return jsonify({"error": "Certificate not found"}), 404
+    
+    db.session.delete(cert)
+    db.session.commit()
+    
+    return jsonify({"message": "Certificate deleted successfully"}), 200
