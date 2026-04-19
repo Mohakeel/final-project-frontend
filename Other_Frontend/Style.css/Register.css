@@ -50,7 +50,31 @@ html, body {
   flex-shrink: 0;
 }
 
-.left-top { margin-bottom: auto; }
+/* Animated network canvas */
+#networkCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.left-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  flex: 1;
+}
+
+.left-top { 
+  margin-bottom: auto;
+  position: relative;
+  z-index: 1;
+}
 
 .logo {
   font-family: var(--font-head);
