@@ -111,6 +111,33 @@ export async function verifyCertByHash(hash) {
   return apiFetch(`/university/certificate-verification/${hash}`);
 }
 
+// ── Certificate Management ────────────────────────────────
+export async function getCertificates() {
+  return apiFetch('/university/certificates');
+}
+
+export async function createCertificate(data) {
+  return apiFetch('/university/certificates', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function bulkUploadCertificates(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiFetch('/university/certificates/bulk', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+export async function deleteCertificate(id) {
+  return apiFetch(`/university/certificates/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ── Employer ──────────────────────────────────────────────
 export async function getEmpProfile() {
   return apiFetch('/employer/profile');
