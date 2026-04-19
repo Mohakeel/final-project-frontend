@@ -35,6 +35,14 @@ if (signOutBtn) {
   });
 }
 
+// ── Post New Job Button ──
+const postNewJobBtn = document.getElementById('postNewJobBtn');
+if (postNewJobBtn) {
+  postNewJobBtn.addEventListener('click', () => {
+    window.location.href = 'Emp_Post_Job.html';
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Animate impact number
   const impactNum = document.querySelector('.impact-number');

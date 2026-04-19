@@ -48,7 +48,10 @@ class Job(db.Model):
     salary_min = db.Column(db.Float, nullable=True)
     salary_max = db.Column(db.Float, nullable=True)
     job_type = db.Column(db.String(50), nullable=True)  # Full-time, Part-time, Contract
-    status = db.Column(db.String(20), default='OPEN')  # OPEN, CLOSED, FILLED
+    status = db.Column(db.String(20), default='DRAFT')  # DRAFT, OPEN, CLOSED
+    credential_required = db.Column(db.Boolean, default=False)
+    is_public = db.Column(db.Boolean, default=True)
+    ai_matching = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

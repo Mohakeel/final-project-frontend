@@ -437,6 +437,11 @@ p, .page-desc, .page-subtitle, .welcome-sub { font-size: 14px; color: #6b7280; l
   color: #1e40af;
 }
 
+.draft-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .closed-badge {
   background: #f3f3f0;
   color: #777;

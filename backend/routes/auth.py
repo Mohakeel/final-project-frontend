@@ -46,8 +46,20 @@ def login():
     data = request.json
     user = User.query.filter_by(email=data['email']).first()
     if user and check_password_hash(user.password, data['password']):
+        # Get the user's name from their profile table
+        name = None
+        if user.role == 'applicant':
+            profile = Applicant.query.filter_by(user_id=user.id).first()
+            name = profile.full_name if profile else None
+        elif user.role == 'employer':
+            profile = Employer.query.filter_by(user_id=user.id).first()
+            name = profile.company_name if profile else None
+        elif user.role == 'university':
+            profile = University.query.filter_by(user_id=user.id).first()
+            name = profile.uni_name if profile else None
+        
         token = create_access_token(identity=str(user.id), additional_claims={"role": user.role})
-        return jsonify(access_token=token, role=user.role), 200
+        return jsonify(access_token=token, role=user.role, name=name), 200
     return jsonify({"msg": "Bad credentials"}), 401
 
 

@@ -17,6 +17,11 @@ def create_job():
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
     
+    # Determine status: if 'status' is provided use it, otherwise default to OPEN
+    status = data.get('status', 'OPEN')
+    if status not in ['DRAFT', 'OPEN', 'CLOSED']:
+        status = 'OPEN'
+    
     new_job = Job(
         employer_id=employer.id,
         title=data.get('title'),
@@ -25,11 +30,14 @@ def create_job():
         salary_min=data.get('salary_min'),
         salary_max=data.get('salary_max'),
         job_type=data.get('job_type'),
-        status='OPEN'
+        status=status,
+        credential_required=data.get('credential_required', False),
+        is_public=data.get('is_public', True),
+        ai_matching=data.get('ai_matching', False)
     )
     db.session.add(new_job)
     db.session.commit()
-    return jsonify({"message": "Job posted successfully", "job_id": new_job.id}), 201
+    return jsonify({"message": "Job created successfully", "job_id": new_job.id}), 201
 
 @employer_bp.route('/jobs', methods=['GET'])
 @jwt_required()
@@ -53,6 +61,9 @@ def get_my_jobs():
             "salary_max": job.salary_max,
             "job_type": job.job_type,
             "status": job.status,
+            "credential_required": job.credential_required,
+            "is_public": job.is_public,
+            "ai_matching": job.ai_matching,
             "created_at": job.created_at.isoformat() if job.created_at else None,
             "updated_at": job.updated_at.isoformat() if job.updated_at else None
         })
@@ -274,3 +285,19 @@ def update_employer_profile():
     
     db.session.commit()
     return jsonify({"message": "Employer profile updated successfully"}), 200
+
+@employer_bp.route('/universities', methods=['GET'])
+@jwt_required()
+@role_required('employer')
+def get_universities():
+    """Get list of all universities for verification request form"""
+    from models.models import University
+    universities = University.query.all()
+    output = []
+    for uni in universities:
+        output.append({
+            "id": uni.id,
+            "uni_name": uni.uni_name,
+            "uni_code": uni.uni_code
+        })
+    return jsonify(output), 200

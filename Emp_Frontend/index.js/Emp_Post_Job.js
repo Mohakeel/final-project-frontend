@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
       job_type:    document.getElementById('jobType').value,
       salary_min:  parseFloat(document.getElementById('salaryMin').value) || null,
       salary_max:  parseFloat(document.getElementById('salaryMax').value) || null,
+      credential_required: document.getElementById('credentialToggle')?.checked || false,
+      is_public:   document.getElementById('visibilityToggle')?.checked || true,
+      ai_matching: document.getElementById('aiToggle')?.checked || false,
     };
   }
 
@@ -45,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     createBtn.addEventListener('click', async () => {
       const data = getFormData();
       if (!validateForm(data)) return;
+
+      data.status = 'OPEN'; // Publish immediately
 
       createBtn.textContent = 'Posting...';
       createBtn.disabled    = true;
@@ -70,10 +75,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Save as Draft button ──
   const draftBtn = document.getElementById('saveDraftBtn');
   if (draftBtn) {
-    draftBtn.addEventListener('click', () => {
+    draftBtn.addEventListener('click', async () => {
       const data = getFormData();
-      if (!data.title) { showToast('Please enter a job title to save a draft.'); document.getElementById('jobTitle').focus(); return; }
-      showToast('Draft saved locally.');
+      if (!data.title) { 
+        showToast('Please enter a job title to save a draft.'); 
+        document.getElementById('jobTitle').focus(); 
+        return; 
+      }
+
+      data.status = 'DRAFT'; // Save as draft
+
+      draftBtn.textContent = 'Saving...';
+      draftBtn.disabled = true;
+
+      try {
+        await createJob(data);
+        showToast('Draft saved successfully!');
+        setTimeout(() => { window.location.href = 'Emp_My_Job.html'; }, 1500);
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      } finally {
+        draftBtn.textContent = 'Save as Draft';
+        draftBtn.disabled = false;
+      }
     });
   }
 

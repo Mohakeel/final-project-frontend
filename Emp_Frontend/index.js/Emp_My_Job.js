@@ -1,4 +1,4 @@
-import { getMyJobs, deleteJob, updateJob, logout, removeToken, removeRole } from '../../frontend/api.js';
+import { getMyJobs, deleteJob, updateJob, logout, removeToken, removeRole, getName, setName, getEmpProfile } from '../../frontend/api.js';
 
 // ── Toast ──
 function showToast(msg) {
@@ -29,7 +29,22 @@ if (signOutBtn) {
 document.addEventListener('DOMContentLoaded', async () => {
   const jobList = document.getElementById('jobList');
 
-  // ── Tab filtering (works on both static and dynamic cards) ──
+  // Load and display user name
+  const userNameEl = document.querySelector('.user-name');
+  const storedName = getName();
+  if (userNameEl && storedName) userNameEl.textContent = storedName;
+  
+  try {
+    const profile = await getEmpProfile();
+    if (userNameEl && profile.company_name) {
+      userNameEl.textContent = profile.company_name;
+      setName(profile.company_name);
+    }
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+  }
+
+  // ── Tab filtering ──
   function bindTabs() {
     const tabs     = document.querySelectorAll('.tab');
     const jobCards = document.querySelectorAll('.job-card');
@@ -67,14 +82,51 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    // Update tab counts
+    const allCount = jobs.length;
+    const activeCount = jobs.filter(j => j.status === 'OPEN').length;
+    const draftCount = jobs.filter(j => j.status === 'DRAFT').length;
+    const closedCount = jobs.filter(j => j.status === 'CLOSED').length;
+
+    const tabs = document.querySelectorAll('.tab');
+    if (tabs[0]) tabs[0].textContent = `All Jobs (${allCount})`;
+    if (tabs[1]) tabs[1].textContent = `Active (${activeCount})`;
+    if (tabs[2]) tabs[2].textContent = `Drafts (${draftCount})`;
+    if (tabs[3]) tabs[3].textContent = `Closed (${closedCount})`;
+
     jobList.innerHTML = jobs.map(job => {
-      const statusLabel = job.status === 'OPEN' ? 'Active' : job.status === 'CLOSED' ? 'Closed' : job.status;
-      const badgeClass  = job.status === 'OPEN' ? 'active-badge' : 'closed-badge';
+      const statusLabel = job.status === 'OPEN' ? 'Active' : job.status === 'CLOSED' ? 'Closed' : job.status === 'DRAFT' ? 'Draft' : job.status;
+      const badgeClass  = job.status === 'OPEN' ? 'active-badge' : job.status === 'CLOSED' ? 'closed-badge' : 'draft-badge';
+      const dataStatus  = job.status === 'OPEN' ? 'active' : job.status === 'DRAFT' ? 'draft' : 'closed';
       const salary = job.salary_min && job.salary_max
-        ? `$${(job.salary_min / 1000).toFixed(0)}k – $${(job.salary_max / 1000).toFixed(0)}k`
-        : job.salary_min ? `$${(job.salary_min / 1000).toFixed(0)}k+` : 'Salary not specified';
+        ? `${(job.salary_min / 1000).toFixed(0)}k – ${(job.salary_max / 1000).toFixed(0)}k`
+        : job.salary_min ? `${(job.salary_min / 1000).toFixed(0)}k+` : 'Salary not specified';
+      
+      // Action buttons based on status
+      let actionButtons = '';
+      if (job.status === 'DRAFT') {
+        actionButtons = `
+          <button class="btn-outline publish-btn" data-id="${job.id}">Publish</button>
+          <button class="icon-action edit-btn" data-id="${job.id}" title="Edit">✏️</button>
+          <button class="icon-action danger delete-btn" data-id="${job.id}" title="Delete">🗑</button>
+        `;
+      } else if (job.status === 'OPEN') {
+        actionButtons = `
+          <button class="btn-outline view-apps-btn" data-id="${job.id}">View Applications</button>
+          <button class="icon-action unpublish-btn" data-id="${job.id}" title="Unpublish">📥</button>
+          <button class="icon-action close-btn" data-id="${job.id}" title="Close">🔒</button>
+          <button class="icon-action danger delete-btn" data-id="${job.id}" title="Delete">🗑</button>
+        `;
+      } else if (job.status === 'CLOSED') {
+        actionButtons = `
+          <button class="btn-outline muted-btn">View Report</button>
+          <button class="icon-action reopen-btn" data-id="${job.id}" title="Reopen">🔓</button>
+          <button class="icon-action danger delete-btn" data-id="${job.id}" title="Delete">🗑</button>
+        `;
+      }
+
       return `
-        <div class="job-card" data-status="${job.status === 'OPEN' ? 'active' : 'closed'}" data-id="${job.id}">
+        <div class="job-card" data-status="${dataStatus}" data-id="${job.id}">
           <div class="job-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
           </div>
@@ -90,14 +142,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
           <div class="job-actions">
-            <button class="btn-outline view-apps-btn" data-id="${job.id}">View Applications</button>
-            <button class="icon-action toggle-status-btn" data-id="${job.id}" data-status="${job.status}" title="Toggle status">⟳</button>
-            <button class="icon-action danger delete-btn" data-id="${job.id}" title="Delete">🗑</button>
+            ${actionButtons}
           </div>
         </div>`;
     }).join('');
 
-    // Bind delete buttons
+    // Bind all action buttons
+    bindActionButtons();
+    bindTabs();
+    bindSearch();
+  }
+
+  // ── Bind action buttons ──
+  function bindActionButtons() {
+    // Delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id   = parseInt(btn.dataset.id);
@@ -116,28 +174,69 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Bind toggle status buttons
-    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+    // Publish buttons (DRAFT -> OPEN)
+    document.querySelectorAll('.publish-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const id        = parseInt(btn.dataset.id);
-        const curStatus = btn.dataset.status;
-        const newStatus = curStatus === 'OPEN' ? 'CLOSED' : 'OPEN';
+        const id = parseInt(btn.dataset.id);
         try {
-          await updateJob(id, { status: newStatus });
-          btn.dataset.status = newStatus;
-          const badge = btn.closest('.job-card')?.querySelector('.status-badge');
-          if (badge) {
-            badge.textContent = newStatus === 'OPEN' ? 'Active' : 'Closed';
-            badge.className   = `status-badge ${newStatus === 'OPEN' ? 'active-badge' : 'closed-badge'}`;
-          }
-          showToast(`Job status updated to ${newStatus}.`);
+          await updateJob(id, { status: 'OPEN' });
+          showToast('Job published successfully!');
+          const jobs = await getMyJobs();
+          renderJobs(jobs);
         } catch (err) {
           showToast('Error: ' + err.message);
         }
       });
     });
 
-    // Bind view applications buttons
+    // Unpublish buttons (OPEN -> DRAFT)
+    document.querySelectorAll('.unpublish-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.dataset.id);
+        if (!confirm('Unpublish this job? It will be moved to drafts.')) return;
+        try {
+          await updateJob(id, { status: 'DRAFT' });
+          showToast('Job unpublished.');
+          const jobs = await getMyJobs();
+          renderJobs(jobs);
+        } catch (err) {
+          showToast('Error: ' + err.message);
+        }
+      });
+    });
+
+    // Close buttons (OPEN -> CLOSED)
+    document.querySelectorAll('.close-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.dataset.id);
+        if (!confirm('Close this job? No more applications will be accepted.')) return;
+        try {
+          await updateJob(id, { status: 'CLOSED' });
+          showToast('Job closed.');
+          const jobs = await getMyJobs();
+          renderJobs(jobs);
+        } catch (err) {
+          showToast('Error: ' + err.message);
+        }
+      });
+    });
+
+    // Reopen buttons (CLOSED -> OPEN)
+    document.querySelectorAll('.reopen-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.dataset.id);
+        try {
+          await updateJob(id, { status: 'OPEN' });
+          showToast('Job reopened.');
+          const jobs = await getMyJobs();
+          renderJobs(jobs);
+        } catch (err) {
+          showToast('Error: ' + err.message);
+        }
+      });
+    });
+
+    // View applications buttons
     document.querySelectorAll('.view-apps-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         localStorage.setItem('selected_job_id', btn.dataset.id);
@@ -145,8 +244,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    bindTabs();
-    bindSearch();
+    // Edit buttons
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        showToast('Edit functionality coming soon!');
+      });
+    });
   }
 
   // ── Load jobs ──
@@ -162,18 +265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Static HTML page — just bind existing UI
     bindTabs();
     bindSearch();
-
-    document.querySelectorAll('.icon-action.danger').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const card  = btn.closest('.job-card');
-        const title = card?.querySelector('.job-title')?.textContent || 'this job';
-        if (confirm(`Delete "${title}"?`) && card) {
-          card.style.transition = 'opacity 0.3s';
-          card.style.opacity    = '0';
-          setTimeout(() => card.remove(), 300);
-        }
-      });
-    });
   }
 
   // ── Create New Listing ──
