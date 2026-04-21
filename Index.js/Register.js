@@ -1,4 +1,4 @@
-import { register, setToken, setRole, setName } from '../../frontend/api.js';
+import { register, setToken, setRole, setName } from '../frontend/api.js';
 
 // ========================
 // ANIMATED NETWORK CANVAS
@@ -265,7 +265,7 @@ createBtn.addEventListener('click', async () => {
       data.role === 'applicant'  ? '../Applicant_Frontend/App_Dashboard.html' :
       data.role === 'employer'   ? '../Emp_Frontend/Employer_Dashboard.html'  :
       data.role === 'university' ? '../Uni_Frontend/Uni_Dashboard.html'       :
-      'Landing_Page.html';
+      'index.html';
     setTimeout(() => { window.location.href = dest; }, 1200);
   } catch (err) {
     getOrCreateErrorEl().textContent = err.message || 'Registration failed. Please try again.';

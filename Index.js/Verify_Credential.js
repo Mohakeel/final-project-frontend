@@ -1,4 +1,4 @@
-import { verifyCertByHash } from '../../frontend/api.js';
+import { verifyCertByHash } from '../frontend/api.js';
 
 // ========================
 // VERIFY BUTTON & MODAL
