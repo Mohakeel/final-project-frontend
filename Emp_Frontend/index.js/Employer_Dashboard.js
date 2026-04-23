@@ -28,22 +28,26 @@ function animateCount(element, target, duration) {
 }
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await logout();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      await logout();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 // ── Post New Job Button ──
-const postNewJobBtn = document.getElementById('postNewJobBtn');
-if (postNewJobBtn) {
-  postNewJobBtn.addEventListener('click', () => {
-    window.location.href = 'Emp_Post_Job.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const postNewJobBtn = document.getElementById('postNewJobBtn');
+  if (postNewJobBtn) {
+    postNewJobBtn.addEventListener('click', () => {
+      window.location.href = 'Emp_Post_Job.html';
+    });
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   initNotificationBell();

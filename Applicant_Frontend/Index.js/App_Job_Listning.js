@@ -10,10 +10,12 @@ if (userNameEl) {
 }
 
 // ── Sign Out ──
-document.getElementById('signOutBtn')?.addEventListener('click', async e => {
-  e.preventDefault();
-  await logout();
-  window.location.href = '../Other_Frontend/Login.html';
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('signOutBtn')?.addEventListener('click', async e => {
+    e.preventDefault();
+    await logout();
+    window.location.href = '../../Login.html';
+  });
 });
 
 // ── State ──

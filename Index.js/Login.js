@@ -205,7 +205,7 @@ signinBtn.addEventListener('click', async () => {
       if (data.role === 'applicant') window.location.href = '../Applicant_Frontend/App_Dashboard.html';
       else if (data.role === 'employer') window.location.href = '../Emp_Frontend/Employer_Dashboard.html';
       else if (data.role === 'university') window.location.href = '../Uni_Frontend/Uni_Dashboard.html';
-      else window.location.href = 'Landing_Page.html';
+      else window.location.href = 'index.html';
     }, 800);
   } catch (err) {
     getOrCreateErrorEl().textContent = err.message || 'Login failed. Please try again.';

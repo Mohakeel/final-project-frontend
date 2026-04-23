@@ -4,6 +4,11 @@
   padding: 0;
 }
 
+button, input, select, textarea {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  text-transform: none;
+}
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #f4f5f7;

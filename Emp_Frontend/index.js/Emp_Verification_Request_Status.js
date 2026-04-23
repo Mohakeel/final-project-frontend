@@ -3,16 +3,18 @@ import { initNotificationBell } from '../../frontend/notifications.js';
 import { initAvatar } from '../../frontend/avatar.js';
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    try { await logout(); } catch (_) {}
-    removeToken();
-    removeRole();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      try { await logout(); } catch (_) {}
+      removeToken();
+      removeRole();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 // ── State Management ──
 let allRequests = [];
@@ -38,40 +40,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Failed to load profile:', err);
   }
+
+  // ── New Request Button ──
+  document.getElementById('newRequestBtn')?.addEventListener('click', () => {
+    window.location.href = 'Emp_Verification_Request_Form.html';
+  });
+
+  // ── Filter Button ──
+  const filterBtn = document.getElementById('filterBtn');
+  if (filterBtn) {
+    filterBtn.addEventListener('click', () => {
+      const filterOptions = ['All', 'PENDING', 'VERIFIED', 'REJECTED'];
+      const current = filterBtn.dataset.filter || 'All';
+      const nextFilter = filterOptions[(filterOptions.indexOf(current) + 1) % filterOptions.length];
+      filterBtn.dataset.filter = nextFilter;
+      filterBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+        Filter: ${nextFilter}`;
+      applyFilter(nextFilter);
+    });
+  }
+
+  // ── Search Input ──
+  document.querySelector('.search-input')?.addEventListener('input', () => applySearchAndFilter());
 });
 
 // ── New Request Button ──
-const newRequestBtn = document.getElementById('newRequestBtn');
-if (newRequestBtn) {
-  newRequestBtn.addEventListener('click', () => {
-    window.location.href = 'Emp_Verification_Request_Form.html';
-  });
-}
-
 // ── Filter Button ──
-const filterBtn = document.getElementById('filterBtn');
-if (filterBtn) {
-  filterBtn.addEventListener('click', () => {
-    const filterOptions = ['All', 'PENDING', 'VERIFIED', 'REJECTED'];
-    const current = filterBtn.dataset.filter || 'All';
-    const currentIndex = filterOptions.indexOf(current);
-    const nextFilter = filterOptions[(currentIndex + 1) % filterOptions.length];
-    filterBtn.dataset.filter = nextFilter;
-    filterBtn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-      Filter: ${nextFilter}
-    `;
-    applyFilter(nextFilter);
-  });
-}
-
 // ── Search Input ──
-const searchInput = document.querySelector('.search-input');
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    applySearchAndFilter();
-  });
-}
+// (All wired inside DOMContentLoaded below)
 
 // ── Apply Search and Filter ──
 function applySearchAndFilter() {

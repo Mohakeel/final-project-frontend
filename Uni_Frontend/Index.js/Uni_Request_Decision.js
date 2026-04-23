@@ -186,12 +186,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Sign out
-const signOutBtnUni = document.getElementById('signOutBtn');
-if (signOutBtnUni) {
-  signOutBtnUni.addEventListener('click', function(e) {
-    e.preventDefault();
-    if (confirm('Are you sure you want to sign out?')) {
-      window.location.href = '../Other_Frontend/Login.html';
-    }
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtnUni = document.getElementById('signOutBtn');
+  if (signOutBtnUni) {
+    signOutBtnUni.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (confirm('Are you sure you want to sign out?')) {
+        window.location.href = '../../Login.html';
+      }
+    });
+  }
+});

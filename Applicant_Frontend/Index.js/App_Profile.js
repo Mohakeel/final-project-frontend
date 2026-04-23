@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     signOutBtn.addEventListener('click', async e => {
       e.preventDefault();
       await logout();
-      window.location.href = '../Other_Frontend/Login.html';
+      window.location.href = '../../Login.html';
     });
   }
 });

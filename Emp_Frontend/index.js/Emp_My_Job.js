@@ -17,21 +17,28 @@ function showToast(msg) {
 }
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    try { await logout(); } catch (_) {}
-    removeToken();
-    removeRole();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      try { await logout(); } catch (_) {}
+      removeToken();
+      removeRole();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   initNotificationBell();
   initAvatar();
   const jobList = document.getElementById('jobList');
+
+  // ── Create New Listing button ──
+  document.getElementById('createNewListingBtn')?.addEventListener('click', () => {
+    window.location.href = 'Emp_Post_Job.html';
+  });
 
   // Load and display user name
   const userNameEl = document.querySelector('.user-name');

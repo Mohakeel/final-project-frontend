@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try { await logout(); } catch (_) {}
       removeToken();
       removeRole();
-      window.location.href = '../Other_Frontend/Login.html';
+      window.location.href = '../../Login.html';
     });
   }
 

@@ -24,16 +24,18 @@ function statusBadgeHTML(status) {
 }
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    try { await logout(); } catch (_) {}
-    removeToken();
-    removeRole();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      try { await logout(); } catch (_) {}
+      removeToken();
+      removeRole();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 // ── Tab switching ──
 let currentTab = 'all';

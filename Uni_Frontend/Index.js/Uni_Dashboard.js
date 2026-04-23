@@ -3,8 +3,9 @@ import { initNotificationBell } from '../../frontend/notifications.js';
 import { initAvatar } from '../../frontend/avatar.js';
 
 // ── Toast ──
-const toast = document.getElementById('toast');
 function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
   toast.textContent = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
@@ -24,14 +25,16 @@ function relativeTime(isoStr) {
 }
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await logout();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      await logout();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 // ── Action cards navigation ──
 document.querySelectorAll('.action-card[data-href]').forEach(card => {

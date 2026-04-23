@@ -37,7 +37,10 @@ export async function apiFetch(endpoint, options = {}) {
   if (response.status === 401) {
     removeToken();
     removeRole();
-    window.location.href = '../Other_Frontend/Login.html';
+    // Find Login.html relative to current page location
+    const depth = window.location.pathname.split('/').length - 2;
+    const prefix = depth > 1 ? '../'.repeat(depth - 1) : '';
+    window.location.href = prefix + 'Login.html';
     return;
   }
 

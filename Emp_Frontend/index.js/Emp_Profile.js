@@ -87,24 +87,6 @@ function showToast(msg) {
   setTimeout(() => { t.style.opacity = '0'; }, 3000);
 }
 
-// ── Nav Active State ──
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    item.classList.add('active');
-  });
-});
-
-// ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await logout();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
-
 // ── Load profile ──
 async function loadProfile() {
   try {
@@ -112,17 +94,13 @@ async function loadProfile() {
     const nameEl  = document.getElementById('companyName');
     const indEl   = document.getElementById('industry');
     const emailEl = document.getElementById('corpEmail');
-
     if (nameEl  && profile.company_name)  nameEl.value  = profile.company_name;
     if (emailEl && profile.company_email) emailEl.value = profile.company_email;
     if (indEl   && profile.industry) {
-      // Try to select matching option
       const opts = Array.from(indEl.options);
       const match = opts.find(o => o.value.toLowerCase() === (profile.industry || '').toLowerCase());
       if (match) indEl.value = match.value;
     }
-
-    // Topbar — persist updated name
     if (userNameEl && profile.company_name) {
       userNameEl.textContent = profile.company_name;
       setName(profile.company_name);
@@ -132,38 +110,60 @@ async function loadProfile() {
   }
 }
 
+// ── Nav Active State ──
+// ── Sign Out ──
 // ── Save / Cancel ──
-const saveBtn   = document.getElementById('saveBtn');
-const cancelBtn = document.getElementById('cancelBtn');
+// (All wired inside DOMContentLoaded)
 
-saveBtn.addEventListener('click', async () => {
-  const name  = document.getElementById('companyName').value.trim();
-  const email = document.getElementById('corpEmail').value.trim();
-  const industry = document.getElementById('industry').value;
+document.addEventListener('DOMContentLoaded', () => {
+  // Nav active state
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
 
-  if (!name)  { showToast('Company name is required.'); return; }
-  if (!email || !email.includes('@')) { showToast('Please enter a valid corporate email address.'); return; }
-
-  saveBtn.textContent = 'Saving...';
-  saveBtn.disabled    = true;
-
-  try {
-    await updateEmpProfile({ company_name: name, company_email: email, industry });
-    showToast('Profile saved successfully.');
-    saveBtn.textContent = '✔ Saved!';
-    saveBtn.style.background = '#16a34a';
-    setTimeout(() => {
-      saveBtn.textContent = 'Save Changes';
-      saveBtn.style.background = '#1a3cdc';
-      saveBtn.disabled = false;
-    }, 2500);
-  } catch (err) {
-    showToast('Error: ' + err.message);
-    saveBtn.textContent = 'Save Changes';
-    saveBtn.disabled    = false;
+  // Sign Out
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      await logout();
+      window.location.href = '../../Login.html';
+    });
   }
+
+  // Save / Cancel
+  const saveBtn   = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const name  = document.getElementById('companyName').value.trim();
+      const email = document.getElementById('corpEmail').value.trim();
+      const industry = document.getElementById('industry').value;
+      if (!name)  { showToast('Company name is required.'); return; }
+      if (!email || !email.includes('@')) { showToast('Please enter a valid corporate email address.'); return; }
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled    = true;
+      try {
+        await updateEmpProfile({ company_name: name, company_email: email, industry });
+        showToast('Profile saved successfully.');
+        saveBtn.textContent = '✔ Saved!';
+        saveBtn.style.background = '#16a34a';
+        setTimeout(() => { saveBtn.textContent = 'Save Changes'; saveBtn.style.background = '#1a3cdc'; saveBtn.disabled = false; }, 2500);
+      } catch (err) {
+        showToast('Error: ' + err.message);
+        saveBtn.textContent = 'Save Changes';
+        saveBtn.disabled    = false;
+      }
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => { loadProfile(); });
+  }
+
+  loadProfile();
 });
-
-cancelBtn.addEventListener('click', () => { loadProfile(); });
-
-loadProfile();

@@ -18,14 +18,16 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Sign Out ──
-const signOutBtn = document.getElementById('signOutBtn');
-if (signOutBtn) {
-  signOutBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await logout();
-    window.location.href = '../Other_Frontend/Login.html';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      await logout();
+      window.location.href = '../../Login.html';
+    });
+  }
+});
 
 // ── Browse All Listings ──
 const browseBtn = document.querySelector('.btn-browse');
@@ -35,44 +37,51 @@ const newAppBtn = document.getElementById('newAppBtn');
 if (newAppBtn) newAppBtn.addEventListener('click', () => { window.location.href = 'App_Job_Listning.html'; });
 
 // ── Withdraw modal ──
-const modalOverlay = document.getElementById('modalOverlay');
-const modalConfirm = document.getElementById('modalConfirm');
-const modalCancel  = document.getElementById('modalCancel');
 let pendingWithdrawId = null;
 
-modalCancel.addEventListener('click', () => { modalOverlay.classList.remove('active'); pendingWithdrawId = null; });
-modalOverlay.addEventListener('click', e => {
-  if (e.target === modalOverlay) { modalOverlay.classList.remove('active'); pendingWithdrawId = null; }
-});
+document.addEventListener('DOMContentLoaded', () => {
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalConfirm = document.getElementById('modalConfirm');
+  const modalCancel  = document.getElementById('modalCancel');
 
-modalConfirm.addEventListener('click', async () => {
-  if (!pendingWithdrawId) return;
-  const card = document.querySelector(`.app-card[data-id="${pendingWithdrawId}"]`);
-  modalOverlay.classList.remove('active');
-
-  try {
-    await withdrawApplication(pendingWithdrawId);
-    if (card) {
-      card.style.transition = 'all 0.3s ease';
-      card.style.maxHeight  = card.offsetHeight + 'px';
-      card.style.overflow   = 'hidden';
-      requestAnimationFrame(() => {
-        card.style.maxHeight    = '0';
-        card.style.opacity      = '0';
-        card.style.padding      = '0';
-        card.style.marginBottom = '0';
-        card.style.borderWidth  = '0';
-      });
-      setTimeout(() => { card.remove(); updateCardBorders(); updateCount(); }, 320);
-    }
-  } catch (err) {
-    const errEl = document.createElement('div');
-    errEl.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#dc2626;color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;';
-    errEl.textContent = 'Error: ' + err.message;
-    document.body.appendChild(errEl);
-    setTimeout(() => errEl.remove(), 3000);
+  if (modalCancel) {
+    modalCancel.addEventListener('click', () => { modalOverlay.classList.remove('active'); pendingWithdrawId = null; });
   }
-  pendingWithdrawId = null;
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) { modalOverlay.classList.remove('active'); pendingWithdrawId = null; }
+    });
+  }
+  if (modalConfirm) {
+    modalConfirm.addEventListener('click', async () => {
+      if (!pendingWithdrawId) return;
+      const card = document.querySelector(`.app-card[data-id="${pendingWithdrawId}"]`);
+      modalOverlay.classList.remove('active');
+      try {
+        await withdrawApplication(pendingWithdrawId);
+        if (card) {
+          card.style.transition = 'all 0.3s ease';
+          card.style.maxHeight  = card.offsetHeight + 'px';
+          card.style.overflow   = 'hidden';
+          requestAnimationFrame(() => {
+            card.style.maxHeight    = '0';
+            card.style.opacity      = '0';
+            card.style.padding      = '0';
+            card.style.marginBottom = '0';
+            card.style.borderWidth  = '0';
+          });
+          setTimeout(() => { card.remove(); updateCardBorders(); updateCount(); }, 320);
+        }
+      } catch (err) {
+        const errEl = document.createElement('div');
+        errEl.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#dc2626;color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;';
+        errEl.textContent = 'Error: ' + err.message;
+        document.body.appendChild(errEl);
+        setTimeout(() => errEl.remove(), 3000);
+      }
+      pendingWithdrawId = null;
+    });
+  }
 });
 
 function updateCardBorders() {
@@ -141,7 +150,8 @@ function renderApplications(applications) {
   document.querySelectorAll('.withdraw-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       pendingWithdrawId = parseInt(btn.dataset.id);
-      modalOverlay.classList.add('active');
+      const modalOverlay = document.getElementById('modalOverlay');
+      if (modalOverlay) modalOverlay.classList.add('active');
     });
   });
 
@@ -205,7 +215,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.withdraw-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         pendingWithdrawId = btn.getAttribute('data-id');
-        modalOverlay.classList.add('active');
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) modalOverlay.classList.add('active');
       });
     });
   }

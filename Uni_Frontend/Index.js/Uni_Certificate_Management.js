@@ -8,27 +8,14 @@ const PAGE_SIZE = 10;
 let currentPage = 1;
 let filteredCerts = [];
 
-// ─── Load and display user name ──
-document.addEventListener('DOMContentLoaded', async () => {
-  initNotificationBell();
-  initAvatar();
-  const userNameEl = document.querySelector('.user-name');
-  const storedName = getName();
-  if (userNameEl && storedName) userNameEl.textContent = storedName;
-  
-  try {
-    const profile = await getUniProfile();
-    if (userNameEl && profile.uni_name) {
-      userNameEl.textContent = profile.uni_name;
-      setName(profile.uni_name);
-    }
-  } catch (err) {
-    console.error('Failed to load profile:', err);
-  }
-  
-  // Load certificates
-  await loadCertificates();
-});
+// ─── TOAST ───────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
 
 // ─── Load Certificates ──
 async function loadCertificates() {
@@ -66,6 +53,7 @@ function getRandomColor() {
 // ─── RENDER TABLE ────────────────────────────────────────────────────
 function renderTable() {
   const tbody = document.getElementById('tableBody');
+  if (!tbody) return;
   const start = (currentPage - 1) * PAGE_SIZE;
   const slice = filteredCerts.slice(start, start + PAGE_SIZE);
 
@@ -100,20 +88,19 @@ function renderTable() {
         </td>
       </tr>
     `).join('');
-    
-    // Bind delete buttons
+
     document.querySelectorAll('.action-btn.del').forEach(btn => {
       btn.addEventListener('click', () => deleteCertHandler(parseInt(btn.dataset.id)));
     });
-    // Bind view buttons
     document.querySelectorAll('.action-btn.view-btn').forEach(btn => {
       btn.addEventListener('click', () => showToast('SHA-256: ' + btn.dataset.hash));
     });
   }
 
-  document.getElementById('showingLabel').textContent =
-    `Showing ${Math.min(slice.length, PAGE_SIZE)} of ${filteredCerts.length.toLocaleString()} certificates`;
-
+  const showingLabel = document.getElementById('showingLabel');
+  if (showingLabel) {
+    showingLabel.textContent = `Showing ${Math.min(slice.length, PAGE_SIZE)} of ${filteredCerts.length.toLocaleString()} certificates`;
+  }
   updatePagination();
 }
 
@@ -127,40 +114,11 @@ function updatePagination() {
   });
 }
 
-document.querySelectorAll('.pg-btn[data-page]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentPage = parseInt(btn.dataset.page);
-    renderTable();
-  });
-});
-
-document.getElementById('prevBtn').addEventListener('click', () => {
-  if (currentPage > 1) { currentPage--; renderTable(); }
-});
-document.getElementById('nextBtn').addEventListener('click', () => {
-  const total = Math.ceil(filteredCerts.length / PAGE_SIZE);
-  if (currentPage < total) { currentPage++; renderTable(); }
-});
-
-// ─── SEARCH ──────────────────────────────────────────────────────────
-document.getElementById('searchInput').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase().trim();
-  filteredCerts = allCerts.filter(c =>
-    c.name.toLowerCase().includes(q) ||
-    c.hash.toLowerCase().includes(q) ||
-    c.degree.toLowerCase().includes(q)
-  );
-  currentPage = 1;
-  renderTable();
-});
-
 // ─── DELETE ──────────────────────────────────────────────────────────
 async function deleteCertHandler(id) {
   const cert = allCerts.find(c => c.id === id);
   if (!cert) return;
-  
   if (!confirm(`Delete certificate for ${cert.name}?`)) return;
-  
   try {
     await deleteCertificate(id);
     allCerts = allCerts.filter(c => c.id !== id);
@@ -174,117 +132,106 @@ async function deleteCertHandler(id) {
   }
 }
 
-// ─── FILE UPLOAD ─────────────────────────────────────────────────────
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const browseBtn = document.getElementById('browseBtn');
-const fileNameEl = document.getElementById('fileName');
+// ─── MAIN INIT ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  initNotificationBell();
+  initAvatar();
 
-browseBtn.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) {
-    fileNameEl.textContent = '📎 ' + fileInput.files[0].name;
-  }
-});
-
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) {
-    fileInput.files = e.dataTransfer.files;
-    fileNameEl.textContent = '📎 ' + file.name;
-  }
-});
-
-// ─── MINT FORM ───────────────────────────────────────────────────────
-document.getElementById('mintBtn').addEventListener('click', async () => {
-  const name = document.getElementById('studentName').value.trim();
-  const deg  = document.getElementById('degreeProgram').value.trim();
-  const year = document.getElementById('gradYear').value.trim();
-
-  if (!name || !deg || !year) {
-    showToast('⚠️ Please fill all fields');
-    return;
-  }
-
-  const mintBtn = document.getElementById('mintBtn');
-  mintBtn.textContent = 'Minting...';
-  mintBtn.disabled = true;
-
+  // Load username
+  const userNameEl = document.querySelector('.user-name');
+  const storedName = getName();
+  if (userNameEl && storedName) userNameEl.textContent = storedName;
   try {
-    const result = await createCertificate({
-      student_name: name,
-      degree: deg,
-      graduation_year: parseInt(year),
-      certificate_id: document.getElementById('certId')?.value?.trim() || undefined
-    });
+    const profile = await getUniProfile();
+    if (userNameEl && profile.uni_name) { userNameEl.textContent = profile.uni_name; setName(profile.uni_name); }
+  } catch (err) { console.error('Failed to load profile:', err); }
 
-    showToast(`✅ Certificate minted for ${name}`);
-    
-    // Clear form
-    document.getElementById('studentName').value = '';
-    document.getElementById('degreeProgram').value = '';
-    document.getElementById('gradYear').value = '';
-    fileNameEl.textContent = '';
-    
-    // Reload certificates
-    await loadCertificates();
-    
-  } catch (err) {
-    showToast('Error: ' + err.message);
-  } finally {
-    mintBtn.textContent = 'Mint & Verify Certificate';
-    mintBtn.disabled = false;
-  }
-});
+  // Load certificates
+  await loadCertificates();
 
-// ─── FAB ─────────────────────────────────────────────────────────────
-document.getElementById('fabBtn').addEventListener('click', () => {
-  document.getElementById('studentName').focus();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+  // ── Pagination ──
+  document.querySelectorAll('.pg-btn[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => { currentPage = parseInt(btn.dataset.page); renderTable(); });
+  });
+  document.getElementById('prevBtn')?.addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; renderTable(); }
+  });
+  document.getElementById('nextBtn')?.addEventListener('click', () => {
+    const total = Math.ceil(filteredCerts.length / PAGE_SIZE);
+    if (currentPage < total) { currentPage++; renderTable(); }
+  });
 
-// ─── EXPORT CSV ──────────────────────────────────────────────────────
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const rows = [['Name', 'Hash', 'Degree', 'Class', 'Status'],
-    ...filteredCerts.map(c => [c.name, c.fullHash, c.degree, c.classOf, c.status])];
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'certificates.csv'; a.click();
-  URL.revokeObjectURL(url);
-  showToast('📥 CSV exported');
-});
+  // ── Search ──
+  document.getElementById('searchInput')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().trim();
+    filteredCerts = allCerts.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.hash.toLowerCase().includes(q) ||
+      c.degree.toLowerCase().includes(q)
+    );
+    currentPage = 1;
+    renderTable();
+  });
 
-// ─── TOAST ───────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+  // ── Mint form ──
+  document.getElementById('mintBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('studentName').value.trim();
+    const deg  = document.getElementById('degreeProgram').value.trim();
+    const year = document.getElementById('gradYear').value.trim();
+    if (!name || !deg || !year) { showToast('⚠️ Please fill all fields'); return; }
+    const mintBtn = document.getElementById('mintBtn');
+    mintBtn.textContent = 'Minting...';
+    mintBtn.disabled = true;
+    try {
+      await createCertificate({
+        student_name: name,
+        degree: deg,
+        graduation_year: parseInt(year),
+        certificate_id: document.getElementById('certId')?.value?.trim() || undefined
+      });
+      showToast(`✅ Certificate minted for ${name}`);
+      document.getElementById('studentName').value = '';
+      document.getElementById('degreeProgram').value = '';
+      document.getElementById('gradYear').value = '';
+      if (document.getElementById('certId')) document.getElementById('certId').value = '';
+      await loadCertificates();
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      mintBtn.textContent = 'Mint & Verify Certificate';
+      mintBtn.disabled = false;
+    }
+  });
 
-// ─── Sign out ──
-const signOutBtnUni = document.getElementById('signOutBtn');
-if (signOutBtnUni) {
-  signOutBtnUni.addEventListener('click', async function(e) {
+  // ── FAB ──
+  document.getElementById('fabBtn')?.addEventListener('click', () => {
+    document.getElementById('studentName')?.focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── Export CSV ──
+  document.getElementById('exportBtn')?.addEventListener('click', () => {
+    const rows = [['Name', 'Hash', 'Degree', 'Class', 'Status'],
+      ...filteredCerts.map(c => [c.name, c.fullHash, c.degree, c.classOf, c.status])];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'certificates.csv'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 CSV exported');
+  });
+
+  // ── Sign out ──
+  document.getElementById('signOutBtn')?.addEventListener('click', async e => {
     e.preventDefault();
     try { await logout(); } catch (_) {}
     removeToken();
     removeRole();
-    window.location.href = '../Other_Frontend/Login.html';
+    window.location.href = '../../Login.html';
   });
-}
 
-// ─── BULK CSV / XLS UPLOAD ───────────────────────────────────────────
-
-(function () {
+  // ── BULK UPLOAD ──
   const bulkDropZone    = document.getElementById('bulkDropZone');
   const bulkFileInput   = document.getElementById('bulkFileInput');
   const browseBulkBtn   = document.getElementById('browseBulkBtn');
@@ -296,25 +243,25 @@ if (signOutBtnUni) {
   const bulkClearBtn    = document.getElementById('bulkClearBtn');
   const bulkImportBtn   = document.getElementById('bulkImportBtn');
   const templateBtn     = document.getElementById('downloadTemplateBtn');
-
-  const bulkModal      = document.getElementById('bulkModal');
-  const bulkModalIcon  = document.getElementById('bulkModalIcon');
-  const bulkModalTitle = document.getElementById('bulkModalTitle');
-  const bulkModalDesc  = document.getElementById('bulkModalDesc');
-  const bulkModalOk    = document.getElementById('bulkModalOk');
+  const bulkModal       = document.getElementById('bulkModal');
+  const bulkModalIcon   = document.getElementById('bulkModalIcon');
+  const bulkModalTitle  = document.getElementById('bulkModalTitle');
+  const bulkModalDesc   = document.getElementById('bulkModalDesc');
+  const bulkModalOk     = document.getElementById('bulkModalOk');
 
   let currentBulkFile = null;
 
   function showBulkModal(icon, title, desc) {
+    if (!bulkModal) return;
     bulkModalIcon.textContent  = icon;
     bulkModalTitle.textContent = title;
     bulkModalDesc.textContent  = desc;
     bulkModal.classList.add('show');
   }
-  bulkModalOk.addEventListener('click', () => bulkModal.classList.remove('show'));
 
-  // Download template
-  templateBtn.addEventListener('click', () => {
+  bulkModalOk?.addEventListener('click', () => bulkModal.classList.remove('show'));
+
+  templateBtn?.addEventListener('click', () => {
     const csv = 'Student Name,Certificate ID,Degree Program,Graduation Year\n'
               + 'Jane Smith,CERT-2024-001,B.Sc. Computer Science,2024\n'
               + 'John Doe,CERT-2024-002,M.A. Economics,2024\n';
@@ -327,68 +274,49 @@ if (signOutBtnUni) {
     showToast('📥 Template downloaded');
   });
 
-  // Browse
-  browseBulkBtn.addEventListener('click', e => { e.stopPropagation(); bulkFileInput.click(); });
-  bulkDropZone.addEventListener('click', () => bulkFileInput.click());
-
-  // Drag & drop
-  bulkDropZone.addEventListener('dragover', e => { e.preventDefault(); bulkDropZone.classList.add('dragover'); });
-  bulkDropZone.addEventListener('dragleave', () => bulkDropZone.classList.remove('dragover'));
-  bulkDropZone.addEventListener('drop', e => {
+  browseBulkBtn?.addEventListener('click', e => { e.stopPropagation(); bulkFileInput?.click(); });
+  bulkDropZone?.addEventListener('click', () => bulkFileInput?.click());
+  bulkDropZone?.addEventListener('dragover', e => { e.preventDefault(); bulkDropZone.classList.add('dragover'); });
+  bulkDropZone?.addEventListener('dragleave', () => bulkDropZone.classList.remove('dragover'));
+  bulkDropZone?.addEventListener('drop', e => {
     e.preventDefault();
     bulkDropZone.classList.remove('dragover');
     if (e.dataTransfer.files[0]) handleBulkFile(e.dataTransfer.files[0]);
   });
 
-  bulkFileInput.addEventListener('change', () => {
+  bulkFileInput?.addEventListener('change', () => {
     if (bulkFileInput.files[0]) handleBulkFile(bulkFileInput.files[0]);
   });
 
-  // Clear
-  bulkClearBtn.addEventListener('click', () => {
-    bulkFileInput.value = '';
+  bulkClearBtn?.addEventListener('click', () => {
+    if (bulkFileInput) bulkFileInput.value = '';
     currentBulkFile = null;
-    bulkFileInfo.textContent = '';
-    bulkPreview.style.display = 'none';
-    bulkPreviewHead.innerHTML = '';
-    bulkPreviewBody.innerHTML = '';
+    if (bulkFileInfo) bulkFileInfo.textContent = '';
+    if (bulkPreview) bulkPreview.style.display = 'none';
+    if (bulkPreviewHead) bulkPreviewHead.innerHTML = '';
+    if (bulkPreviewBody) bulkPreviewBody.innerHTML = '';
   });
 
-  // Import
-  bulkImportBtn.addEventListener('click', async () => {
-    if (!currentBulkFile) {
-      showToast('⚠️ No file selected');
-      return;
-    }
-    
+  bulkImportBtn?.addEventListener('click', async () => {
+    if (!currentBulkFile) { showToast('⚠️ No file selected'); return; }
     bulkImportBtn.textContent = 'Uploading...';
     bulkImportBtn.disabled = true;
-    
     try {
       const result = await bulkUploadCertificates(currentBulkFile);
-      
       if (result.errors && result.errors.length > 0) {
-        // Show detailed errors
         const errorList = result.errors.slice(0, 5).join('\n');
         const moreErrors = result.errors.length > 5 ? `\n... and ${result.errors.length - 5} more errors` : '';
         showBulkModal('⚠️', 'Import Completed with Errors',
-          `${result.created} certificate${result.created !== 1 ? 's' : ''} added successfully.\n\n${result.errors.length} error${result.errors.length !== 1 ? 's' : ''}:\n${errorList}${moreErrors}`
-        );
+          `${result.created} certificate${result.created !== 1 ? 's' : ''} added.\n\n${result.errors.length} errors:\n${errorList}${moreErrors}`);
       } else {
         showBulkModal('✅', 'Import Successful',
-          `${result.created} certificate record${result.created !== 1 ? 's' : ''} have been added to the database.`
-        );
+          `${result.created} certificate record${result.created !== 1 ? 's' : ''} added to the database.`);
       }
-      
-      // Reload certificates
       await loadCertificates();
-      
-      // Clear form
-      bulkFileInput.value = '';
+      if (bulkFileInput) bulkFileInput.value = '';
       currentBulkFile = null;
-      bulkFileInfo.textContent = '';
-      bulkPreview.style.display = 'none';
-      
+      if (bulkFileInfo) bulkFileInfo.textContent = '';
+      if (bulkPreview) bulkPreview.style.display = 'none';
     } catch (err) {
       showBulkModal('⚠️', 'Upload Failed', err.message);
     } finally {
@@ -403,47 +331,37 @@ if (signOutBtnUni) {
       showBulkModal('⚠️', 'Unsupported File', 'Please upload a .csv, .xls, or .xlsx file.');
       return;
     }
-    
     currentBulkFile = file;
-    bulkFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-
+    if (bulkFileInfo) bulkFileInfo.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
     if (ext === 'csv') {
       const reader = new FileReader();
       reader.onload = e => parseAndRender(e.target.result);
       reader.readAsText(file);
     } else {
-      // Excel file - show placeholder
       renderExcelPlaceholder(file.name);
     }
   }
 
   function renderExcelPlaceholder(filename) {
-    const headers = ['Student Name', 'Student ID', 'Degree Program', 'Graduation Year', 'Certificate Hash'];
-    bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
-    bulkPreviewBody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:#888;padding:1.5rem;">
-      Excel preview not available in browser — <strong>${filename}</strong> is ready to import.
-    </td></tr>`;
-    bulkPreviewCount.textContent = 'Excel file loaded';
-    bulkPreview.style.display = 'block';
+    const headers = ['Student Name', 'Certificate ID', 'Degree Program', 'Graduation Year'];
+    if (bulkPreviewHead) bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    if (bulkPreviewBody) bulkPreviewBody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:#888;padding:1.5rem;">Excel preview not available — <strong>${filename}</strong> is ready to import.</td></tr>`;
+    if (bulkPreviewCount) bulkPreviewCount.textContent = 'Excel file loaded';
+    if (bulkPreview) bulkPreview.style.display = 'block';
   }
 
   function parseAndRender(text) {
     const lines = text.trim().split('\n').filter(l => l.trim());
-    if (lines.length < 2) {
-      showBulkModal('⚠️', 'Empty File', 'The CSV file has no data rows.');
-      return;
-    }
+    if (lines.length < 2) { showBulkModal('⚠️', 'Empty File', 'The CSV file has no data rows.'); return; }
     const headers = lines[0].split(',').map(h => h.trim());
     const rows    = lines.slice(1).map(l => l.split(',').map(c => c.trim()));
-
-    bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    if (bulkPreviewHead) bulkPreviewHead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
     const display = rows.slice(0, 10);
-    bulkPreviewBody.innerHTML = display.map(row =>
+    if (bulkPreviewBody) bulkPreviewBody.innerHTML = display.map(row =>
       '<tr>' + headers.map((_, i) => `<td>${row[i] ?? ''}</td>`).join('') + '</tr>'
     ).join('');
-
     const total = rows.length;
-    bulkPreviewCount.textContent = `${total} record${total !== 1 ? 's' : ''} found${total > 10 ? ' (showing first 10)' : ''}`;
-    bulkPreview.style.display = 'block';
+    if (bulkPreviewCount) bulkPreviewCount.textContent = `${total} record${total !== 1 ? 's' : ''} found${total > 10 ? ' (showing first 10)' : ''}`;
+    if (bulkPreview) bulkPreview.style.display = 'block';
   }
-})();
+});
