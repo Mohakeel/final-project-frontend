@@ -2,7 +2,7 @@
 // CertiVerify – Shared API Service Layer
 // ============================================================
 
-export const API_BASE = 'http://127.0.0.1:5000';
+export const API_BASE = 'https://certiverify-production.up.railway.app';
 
 // ── Token / Role helpers ──────────────────────────────────
 export const getToken  = ()    => localStorage.getItem('cv_token');
