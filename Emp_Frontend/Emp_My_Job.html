@@ -240,5 +240,41 @@
   </div>
 
   <script type="module" src="index.js/Emp_My_Job.js"></script>
+
+  <!-- Edit Job Modal -->
+  <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 style="font-size:18px;font-weight:700;">Edit Job</h2>
+        <button id="closeEditModal" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;">✕</button>
+      </div>
+      <input type="hidden" id="editJobId"/>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Job Title</label><input id="editTitle" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+        <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Description</label><textarea id="editDescription" rows="3" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Location</label><input id="editLocation" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Job Type</label><select id="editJobType" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Remote</option><option>Internship</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Salary Min ($)</label><input id="editSalaryMin" type="number" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Salary Max ($)</label><input id="editSalaryMax" type="number" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+        </div>
+        <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Key Responsibilities (one per line)</label><textarea id="editResponsibilities" rows="3" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Education Req.</label><input id="editReqEducation" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Experience Req.</label><input id="editReqExperience" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Tech Skills</label><input id="editReqTechSkills" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+          <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Soft Skills</label><input id="editReqSoftSkills" type="text" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;"/></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+          <button id="cancelEditBtn" style="padding:10px 20px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;font-size:14px;">Cancel</button>
+          <button id="saveEditBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#1e40af;color:#fff;cursor:pointer;font-size:14px;font-weight:600;">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

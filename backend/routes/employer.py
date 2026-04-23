@@ -33,7 +33,12 @@ def create_job():
         status=status,
         credential_required=data.get('credential_required', False),
         is_public=data.get('is_public', True),
-        ai_matching=data.get('ai_matching', False)
+        ai_matching=data.get('ai_matching', False),
+        responsibilities=data.get('responsibilities'),
+        req_education=data.get('req_education'),
+        req_experience=data.get('req_experience'),
+        req_tech_skills=data.get('req_tech_skills'),
+        req_soft_skills=data.get('req_soft_skills'),
     )
     db.session.add(new_job)
     db.session.commit()
@@ -64,6 +69,11 @@ def get_my_jobs():
             "credential_required": job.credential_required,
             "is_public": job.is_public,
             "ai_matching": job.ai_matching,
+            "responsibilities": job.responsibilities,
+            "req_education": job.req_education,
+            "req_experience": job.req_experience,
+            "req_tech_skills": job.req_tech_skills,
+            "req_soft_skills": job.req_soft_skills,
             "created_at": job.created_at.isoformat() if job.created_at else None,
             "updated_at": job.updated_at.isoformat() if job.updated_at else None
         })
@@ -119,6 +129,16 @@ def update_job(job_id):
         job.job_type = data['job_type']
     if 'status' in data:
         job.status = data['status']
+    if 'responsibilities' in data:
+        job.responsibilities = data['responsibilities']
+    if 'req_education' in data:
+        job.req_education = data['req_education']
+    if 'req_experience' in data:
+        job.req_experience = data['req_experience']
+    if 'req_tech_skills' in data:
+        job.req_tech_skills = data['req_tech_skills']
+    if 'req_soft_skills' in data:
+        job.req_soft_skills = data['req_soft_skills']
     
     db.session.commit()
     return jsonify({"message": "Job updated successfully"}), 200
@@ -192,18 +212,21 @@ def update_application_status(app_id):
     
     application.status = status
     
-    # Notify applicant
-    from routes.notifications import create_notification
-    applicant = Applicant.query.get(application.applicant_id)
-    job = Job.query.get(application.job_id)
-    if applicant and job:
-        status_msg = {
-            'ACCEPTED': ('Application Accepted 🎉', f'Congratulations! Your application for "{job.title}" has been accepted.', 'success'),
-            'REJECTED': ('Application Update', f'Your application for "{job.title}" was not selected this time.', 'warning'),
-            'REVIEWED': ('Application Reviewed', f'Your application for "{job.title}" is being reviewed.', 'info'),
-        }.get(status)
-        if status_msg:
-            create_notification(applicant.user_id, status_msg[0], status_msg[1], status_msg[2])
+    # Notify applicant (non-critical)
+    try:
+        from routes.notifications import create_notification
+        applicant = Applicant.query.get(application.applicant_id)
+        job = Job.query.get(application.job_id)
+        if applicant and job:
+            status_msg = {
+                'ACCEPTED': ('Application Accepted 🎉', f'Congratulations! Your application for "{job.title}" has been accepted.', 'success'),
+                'REJECTED': ('Application Update', f'Your application for "{job.title}" was not selected this time.', 'warning'),
+                'REVIEWED': ('Application Reviewed', f'Your application for "{job.title}" is being reviewed.', 'info'),
+            }.get(status)
+            if status_msg:
+                create_notification(applicant.user_id, status_msg[0], status_msg[1], status_msg[2])
+    except Exception:
+        pass
 
     db.session.commit()
     
@@ -272,31 +295,16 @@ def request_verification():
     )
     db.session.add(new_request)
 
-    # Notify based on result
-    from routes.notifications import create_notification
-    if matched_cert:
-        # Auto-verified — notify employer
-        create_notification(
-            employer.user_id,
-            'Certificate Verified ✅',
-            f'"{student_name}" ({degree}, {year}) was automatically verified via blockchain.',
-            'success'
-        )
-    else:
-        # Pending — notify university
-        create_notification(
-            university.user_id,
-            'New Verification Request',
-            f'{employer.company_name or "An employer"} requested verification for {student_name} ({degree}, {year}).',
-            'info'
-        )
-        # Also notify employer it's pending
-        create_notification(
-            employer.user_id,
-            'Verification Request Sent',
-            f'Certificate for "{student_name}" not found in blockchain. Request sent to {university.uni_name} for manual review.',
-            'warning'
-        )
+    # Notify based on result (non-critical)
+    try:
+        from routes.notifications import create_notification
+        if matched_cert:
+            create_notification(employer.user_id, 'Certificate Verified ✅', f'"{student_name}" ({degree}, {year}) was automatically verified via blockchain.', 'success')
+        else:
+            create_notification(university.user_id, 'New Verification Request', f'{employer.company_name or "An employer"} requested verification for {student_name} ({degree}, {year}).', 'info')
+            create_notification(employer.user_id, 'Verification Request Sent', f'Certificate for "{student_name}" not found in blockchain. Request sent to {university.uni_name} for manual review.', 'warning')
+    except Exception:
+        pass
 
     db.session.commit()
 

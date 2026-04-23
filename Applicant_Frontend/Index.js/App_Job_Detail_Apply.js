@@ -188,17 +188,53 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!jobId) return;
     try {
       const job = await getJobDetail(jobId);
+
+      // Title
       const titleEl = document.querySelector('.job-title');
       if (titleEl) titleEl.textContent = job.title || 'Job Detail';
+
+      // Meta items
       const metaItems = document.querySelectorAll('.meta-item');
       if (metaItems[0]) metaItems[0].innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${job.location || 'Remote'}`;
       if (metaItems[1]) {
-        const salary = job.salary_min && job.salary_max ? `${(job.salary_min/1000).toFixed(0)}k – ${(job.salary_max/1000).toFixed(0)}k /yr` : 'Salary not specified';
+        const salary = job.salary_min && job.salary_max ? `$${(job.salary_min/1000).toFixed(0)}k – $${(job.salary_max/1000).toFixed(0)}k /yr` : 'Salary not specified';
         metaItems[1].innerHTML = `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> ${salary}`;
       }
       if (metaItems[2]) metaItems[2].innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${job.job_type || 'Full-time'}`;
+
+      // Description
       const descEl = document.querySelector('.section-body');
       if (descEl && job.description) descEl.textContent = job.description;
+
+      // Key Responsibilities
+      if (job.responsibilities) {
+        const respList = document.querySelector('.responsibilities-list');
+        if (respList) {
+          const items = job.responsibilities.split('\n').filter(r => r.trim());
+          if (items.length > 0) {
+            respList.innerHTML = items.map(r => `
+              <li class="resp-item">
+                <span class="resp-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+                ${r.trim()}
+              </li>`).join('');
+          }
+        }
+      }
+
+      // Requirements
+      const reqCards = document.querySelectorAll('.req-card');
+      if (reqCards.length >= 4) {
+        if (job.req_education)   reqCards[0].querySelector('.req-text').textContent = job.req_education;
+        if (job.req_experience)  reqCards[1].querySelector('.req-text').textContent = job.req_experience;
+        if (job.req_tech_skills) reqCards[2].querySelector('.req-text').textContent = job.req_tech_skills;
+        if (job.req_soft_skills) reqCards[3].querySelector('.req-text').textContent = job.req_soft_skills;
+      }
+
+      // Map address
+      const mapAddress = document.querySelector('.map-address');
+      if (mapAddress && job.location) mapAddress.textContent = job.location;
+
+      // Breadcrumb
       const breadcrumbCurrent = document.querySelector('.breadcrumb-current');
       if (breadcrumbCurrent) breadcrumbCurrent.textContent = job.title || 'Job Detail';
     } catch (err) {

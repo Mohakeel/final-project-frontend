@@ -210,6 +210,11 @@ def get_job_detail(job_id):
         "salary_max": job.salary_max,
         "job_type": job.job_type,
         "status": job.status,
+        "responsibilities": job.responsibilities,
+        "req_education": job.req_education,
+        "req_experience": job.req_experience,
+        "req_tech_skills": job.req_tech_skills,
+        "req_soft_skills": job.req_soft_skills,
         "created_at": job.created_at.isoformat() if job.created_at else None,
         "updated_at": job.updated_at.isoformat() if job.updated_at else None
     }), 200
@@ -244,16 +249,19 @@ def apply_for_job(job_id):
     
     db.session.add(application)
 
-    # Notify employer
-    from routes.notifications import create_notification
-    employer = Employer.query.get(job.employer_id)
-    if employer:
-        create_notification(
-            employer.user_id,
-            'New Job Application',
-            f'{applicant.full_name or "An applicant"} applied for "{job.title}".',
-            'info'
-        )
+    # Notify employer (non-critical — don't let this crash the application)
+    try:
+        from routes.notifications import create_notification
+        employer = Employer.query.get(job.employer_id)
+        if employer:
+            create_notification(
+                employer.user_id,
+                'New Job Application',
+                f'{applicant.full_name or "An applicant"} applied for "{job.title}".',
+                'info'
+            )
+    except Exception:
+        pass  # Notification failure should not block application submission
 
     db.session.commit()
     

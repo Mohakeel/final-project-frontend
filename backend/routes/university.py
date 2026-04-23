@@ -154,25 +154,19 @@ def verify_certificate(request_id):
 
     db.session.commit()
 
-    # Notify employer of the manual decision
-    from routes.notifications import create_notification
-    employer = Employer.query.get(req.employer_id)
-    if employer:
-        if req.status == 'VERIFIED':
-            create_notification(
-                employer.user_id,
-                'Certificate Verified ✅',
-                f'"{req.student_name}" ({req.degree}, {req.year}) has been manually verified by {university.uni_name}.',
-                'success'
-            )
-        else:
-            create_notification(
-                employer.user_id,
-                'Verification Rejected',
-                f'"{req.student_name}" ({req.degree}, {req.year}) was rejected by {university.uni_name}.',
-                'warning'
-            )
-    db.session.commit()
+    # Notify employer of the manual decision (non-critical)
+    try:
+        from routes.notifications import create_notification
+        from models.models import Employer as EmpModel
+        employer = EmpModel.query.get(req.employer_id)
+        if employer:
+            if req.status == 'VERIFIED':
+                create_notification(employer.user_id, 'Certificate Verified ✅', f'"{req.student_name}" ({req.degree}, {req.year}) has been manually verified by {university.uni_name}.', 'success')
+            else:
+                create_notification(employer.user_id, 'Verification Rejected', f'"{req.student_name}" ({req.degree}, {req.year}) was rejected by {university.uni_name}.', 'warning')
+        db.session.commit()
+    except Exception:
+        pass
 
     return jsonify({
         "message": "Verification processed",

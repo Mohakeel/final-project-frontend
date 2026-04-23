@@ -108,12 +108,45 @@
 
         <!-- Description -->
         <div class="form-group">
-          <label class="form-label">Description</label>
+          <label class="form-label">Description / The Role</label>
           <textarea
             class="form-textarea"
             placeholder="Describe the role, responsibilities, and key outcomes..."
             id="jobDescription"
           ></textarea>
+        </div>
+
+        <!-- Key Responsibilities -->
+        <div class="form-group">
+          <label class="form-label">Key Responsibilities <span style="font-weight:400;color:#888;">(one per line)</span></label>
+          <textarea
+            class="form-textarea"
+            placeholder="Execute complex verification protocols...&#10;Collaborate with the AI Engineering team...&#10;Maintain detailed audit logs..."
+            id="jobResponsibilities"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Requirements row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Education Requirement</label>
+            <input type="text" class="form-input" placeholder="e.g. Bachelor's in Computer Science" id="reqEducation"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Experience Requirement</label>
+            <input type="text" class="form-input" placeholder="e.g. 3+ years in software development" id="reqExperience"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tech Skills</label>
+            <input type="text" class="form-input" placeholder="e.g. Python, SQL, React" id="reqTechSkills"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Soft Skills</label>
+            <input type="text" class="form-input" placeholder="e.g. Communication, teamwork" id="reqSoftSkills"/>
+          </div>
         </div>
 
         <!-- Location + Job Type -->

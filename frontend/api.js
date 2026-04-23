@@ -2,7 +2,9 @@
 // CertiVerify – Shared API Service Layer
 // ============================================================
 
-export const API_BASE = 'https://certiverify-production.up.railway.app';
+export const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://127.0.0.1:5000'
+  : 'https://certiverify-production.up.railway.app';
 
 // ── Token / Role helpers ──────────────────────────────────
 export const getToken  = ()    => localStorage.getItem('cv_token');
@@ -193,6 +195,10 @@ export async function requestVerification(data) {
 
 export async function getVerificationRequests() {
   return apiFetch('/employer/verification-requests');
+}
+
+export async function getUniversities() {
+  return apiFetch('/employer/universities');
 }
 
 // ── Applicant ─────────────────────────────────────────────

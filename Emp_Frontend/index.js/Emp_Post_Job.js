@@ -22,15 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Form data ──
   function getFormData() {
     return {
-      title:       document.getElementById('jobTitle').value.trim(),
-      description: document.getElementById('jobDescription').value.trim(),
-      location:    document.getElementById('jobLocation').value.trim(),
-      job_type:    document.getElementById('jobType').value,
-      salary_min:  parseFloat(document.getElementById('salaryMin').value) || null,
-      salary_max:  parseFloat(document.getElementById('salaryMax').value) || null,
+      title:            document.getElementById('jobTitle').value.trim(),
+      description:      document.getElementById('jobDescription').value.trim(),
+      location:         document.getElementById('jobLocation').value.trim(),
+      job_type:         document.getElementById('jobType').value,
+      salary_min:       parseFloat(document.getElementById('salaryMin').value) || null,
+      salary_max:       parseFloat(document.getElementById('salaryMax').value) || null,
       credential_required: document.getElementById('credentialToggle')?.checked || false,
-      is_public:   document.getElementById('visibilityToggle')?.checked || true,
-      ai_matching: document.getElementById('aiToggle')?.checked || false,
+      is_public:        document.getElementById('visibilityToggle')?.checked || true,
+      ai_matching:      document.getElementById('aiToggle')?.checked || false,
+      responsibilities: document.getElementById('jobResponsibilities')?.value.trim() || null,
+      req_education:    document.getElementById('reqEducation')?.value.trim() || null,
+      req_experience:   document.getElementById('reqExperience')?.value.trim() || null,
+      req_tech_skills:  document.getElementById('reqTechSkills')?.value.trim() || null,
+      req_soft_skills:  document.getElementById('reqSoftSkills')?.value.trim() || null,
     };
   }
 
@@ -62,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await createJob(data);
         showToast('Job posted successfully!');
         // Clear form
-        ['jobTitle', 'jobDescription', 'jobLocation', 'salaryMin', 'salaryMax'].forEach(id => {
+        ['jobTitle', 'jobDescription', 'jobLocation', 'salaryMin', 'salaryMax',
+         'jobResponsibilities', 'reqEducation', 'reqExperience', 'reqTechSkills', 'reqSoftSkills'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.value = '';
         });

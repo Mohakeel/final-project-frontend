@@ -1,25 +1,28 @@
-import { requestVerification, logout, removeToken, removeRole } from '../../frontend/api.js';
+import { requestVerification, getUniversities, logout, removeToken, removeRole } from '../../frontend/api.js';
 import { initNotificationBell } from '../../frontend/notifications.js';
 import { initAvatar } from '../../frontend/avatar.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initNotificationBell();
   initAvatar();
+
+  // ── Load universities from API ──
+  try {
+    const universities = await getUniversities();
+    const menu = document.getElementById('dropdownMenu');
+    if (menu && universities.length > 0) {
+      menu.innerHTML = universities.map(u =>
+        `<div class="dropdown-item" onclick="selectInstitution('${u.uni_name}', ${u.id})">${u.uni_name}</div>`
+      ).join('');
+    }
+  } catch (err) {
+    console.warn('Failed to load universities:', err.message);
+  }
 });
 
 // ─── Dropdown ─────────────────────────────────────
 let dropdownOpen = false;
 let selectedUniversityId = null;
-
-// Map institution names to IDs (in a real app you'd fetch these from the API)
-const institutionMap = {
-  'Stanford University': 1,
-  'Wharton School': 2,
-  'London School of Economics': 3,
-  'MIT': 4,
-  'Harvard University': 5,
-  'Oxford University': 6,
-};
 
 window.toggleDropdown = function() {
   dropdownOpen = !dropdownOpen;
@@ -29,11 +32,11 @@ window.toggleDropdown = function() {
   wrapper.classList.toggle('open', dropdownOpen);
 };
 
-window.selectInstitution = function(name) {
+window.selectInstitution = function(name, id) {
   const valueEl = document.getElementById('selectValue');
   valueEl.textContent = name;
   valueEl.classList.add('selected');
-  selectedUniversityId = institutionMap[name] || 1;
+  selectedUniversityId = id;
   dropdownOpen = false;
   document.getElementById('dropdownMenu').classList.remove('open');
   document.getElementById('institutionSelect').classList.remove('open');

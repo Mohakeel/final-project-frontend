@@ -214,11 +214,20 @@ signinBtn.addEventListener('click', async () => {
     showToast('✓ Signed in successfully! Redirecting…');
 
     setTimeout(() => {
-      const base = window.location.pathname.includes('/CertiVerify/') ? '/CertiVerify' : '';
-      if (data.role === 'applicant') window.location.href = base + '/Applicant_Frontend/App_Dashboard.html';
-      else if (data.role === 'employer') window.location.href = base + '/Emp_Frontend/Employer_Dashboard.html';
-      else if (data.role === 'university') window.location.href = base + '/Uni_Frontend/Uni_Dashboard.html';
-      else window.location.href = base + '/Other_Frontend/index.html';
+      let dest;
+      if (window.location.pathname.includes('/CertiVerify/')) {
+        const base = '/CertiVerify';
+        dest = data.role === 'applicant'  ? base + '/Applicant_Frontend/App_Dashboard.html' :
+               data.role === 'employer'   ? base + '/Emp_Frontend/Employer_Dashboard.html'  :
+               data.role === 'university' ? base + '/Uni_Frontend/Uni_Dashboard.html'       :
+               base + '/Other_Frontend/index.html';
+      } else {
+        dest = data.role === 'applicant'  ? '../Applicant_Frontend/App_Dashboard.html' :
+               data.role === 'employer'   ? '../Emp_Frontend/Employer_Dashboard.html'  :
+               data.role === 'university' ? '../Uni_Frontend/Uni_Dashboard.html'       :
+               'index.html';
+      }
+      window.location.href = dest;
     }, 800);
   } catch (err) {
     getOrCreateErrorEl().textContent = err.message || 'Login failed. Please try again.';

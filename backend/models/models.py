@@ -48,11 +48,17 @@ class Job(db.Model):
     location = db.Column(db.String(100), nullable=True)
     salary_min = db.Column(db.Float, nullable=True)
     salary_max = db.Column(db.Float, nullable=True)
-    job_type = db.Column(db.String(50), nullable=True)  # Full-time, Part-time, Contract
-    status = db.Column(db.String(20), default='DRAFT')  # DRAFT, OPEN, CLOSED
+    job_type = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(20), default='DRAFT')
     credential_required = db.Column(db.Boolean, default=False)
     is_public = db.Column(db.Boolean, default=True)
     ai_matching = db.Column(db.Boolean, default=False)
+    # Extended fields
+    responsibilities = db.Column(db.Text, nullable=True)   # newline-separated list
+    req_education    = db.Column(db.String(200), nullable=True)
+    req_experience   = db.Column(db.String(200), nullable=True)
+    req_tech_skills  = db.Column(db.String(200), nullable=True)
+    req_soft_skills  = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

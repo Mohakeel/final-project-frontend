@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initNotificationBell();
   initAvatar();
   const jobList = document.getElementById('jobList');
+  let allJobs = [];
 
   // ── Create New Listing button ──
   document.getElementById('createNewListingBtn')?.addEventListener('click', () => {
@@ -87,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Render jobs from API ──
   function renderJobs(jobs) {
+    allJobs = jobs; // store for edit modal access
     if (!jobList) return;
     if (jobs.length === 0) {
       jobList.innerHTML = '<p style="color:#aaa;padding:24px;">No jobs posted yet.</p>';
@@ -255,13 +257,76 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Edit buttons
+    // Edit buttons — open modal with job data
     document.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        showToast('Edit functionality coming soon!');
+        const jobId = parseInt(btn.dataset.id);
+        const job = allJobs.find(j => j.id === jobId);
+        if (!job) return;
+        openEditModal(job);
       });
     });
   }
+
+  // ── Edit Modal ──
+  function openEditModal(job) {
+    document.getElementById('editJobId').value = job.id;
+    document.getElementById('editTitle').value = job.title || '';
+    document.getElementById('editDescription').value = job.description || '';
+    document.getElementById('editLocation').value = job.location || '';
+    document.getElementById('editJobType').value = job.job_type || 'Full-time';
+    document.getElementById('editSalaryMin').value = job.salary_min || '';
+    document.getElementById('editSalaryMax').value = job.salary_max || '';
+    document.getElementById('editResponsibilities').value = job.responsibilities || '';
+    document.getElementById('editReqEducation').value = job.req_education || '';
+    document.getElementById('editReqExperience').value = job.req_experience || '';
+    document.getElementById('editReqTechSkills').value = job.req_tech_skills || '';
+    document.getElementById('editReqSoftSkills').value = job.req_soft_skills || '';
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  document.getElementById('closeEditModal')?.addEventListener('click', () => {
+    document.getElementById('editModal').style.display = 'none';
+  });
+  document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
+    document.getElementById('editModal').style.display = 'none';
+  });
+  document.getElementById('editModal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('editModal'))
+      document.getElementById('editModal').style.display = 'none';
+  });
+
+  document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
+    const jobId = parseInt(document.getElementById('editJobId').value);
+    const saveBtn = document.getElementById('saveEditBtn');
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+    try {
+      await updateJob(jobId, {
+        title:            document.getElementById('editTitle').value.trim(),
+        description:      document.getElementById('editDescription').value.trim(),
+        location:         document.getElementById('editLocation').value.trim(),
+        job_type:         document.getElementById('editJobType').value,
+        salary_min:       parseFloat(document.getElementById('editSalaryMin').value) || null,
+        salary_max:       parseFloat(document.getElementById('editSalaryMax').value) || null,
+        responsibilities: document.getElementById('editResponsibilities').value.trim() || null,
+        req_education:    document.getElementById('editReqEducation').value.trim() || null,
+        req_experience:   document.getElementById('editReqExperience').value.trim() || null,
+        req_tech_skills:  document.getElementById('editReqTechSkills').value.trim() || null,
+        req_soft_skills:  document.getElementById('editReqSoftSkills').value.trim() || null,
+      });
+      document.getElementById('editModal').style.display = 'none';
+      showToast('Job updated successfully!');
+      // Reload jobs
+      const jobs = await getMyJobs();
+      renderJobs(jobs);
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      saveBtn.textContent = 'Save Changes';
+      saveBtn.disabled = false;
+    }
+  });
 
   // ── Load jobs ──
   if (jobList) {
