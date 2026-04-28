@@ -201,24 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTable();
   });
 
-  // ── Batch ──
-  document.getElementById('batch-btn').addEventListener('click', () => {
-    const btn = document.getElementById('batch-btn');
-    btn.textContent = '⏳ Processing...';
-    btn.disabled = true;
-    setTimeout(() => {
-      btn.innerHTML = '✨ Initialize AI Batch';
-      btn.disabled = false;
-      showToast('AI Batch verification initialized successfully.');
-    }, 2000);
-  });
-
-  // ── Handbook ──
-  document.getElementById('handbook-link').addEventListener('click', e => {
-    e.preventDefault();
-    showToast('Opening Registrar Handbook...');
-  });
-
   // ── Bell ──
   const bellBtn = document.getElementById('bell-btn');
   if (bellBtn) {

@@ -1,4 +1,4 @@
-import { getJobApplications, updateAppStatus, logout, removeToken, removeRole } from '../../frontend/api.js';
+import { getJobApplications, updateAppStatus, logout, removeToken, removeRole, API_BASE, getToken } from '../../frontend/api.js';
 import { initNotificationBell } from '../../frontend/notifications.js';
 import { initAvatar } from '../../frontend/avatar.js';
 
@@ -56,7 +56,7 @@ function renderTable() {
   const tbody = document.getElementById('tableBody');
 
   if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:#aaa;">No applicants found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#aaa;">No applicants found.</td></tr>`;
     return;
   }
 
@@ -64,6 +64,10 @@ function renderTable() {
     const initials = (a.applicant_name || 'UN').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const dateStr  = a.created_at ? new Date(a.created_at).toLocaleDateString() : '—';
     const cover    = a.cover_letter ? `"${a.cover_letter.slice(0, 60)}..."` : '—';
+    const resumeBtn = a.has_resume 
+      ? `<button class="resume-btn" data-applicant-id="${a.applicant_id}" title="View Resume">📄 Resume</button>`
+      : `<span style="color:#aaa;font-size:12px;">No resume</span>`;
+    
     return `
       <tr onclick="selectRow(${i})">
         <td>
@@ -77,6 +81,7 @@ function renderTable() {
         </td>
         <td><span class="cover-snippet">${cover}</span></td>
         <td><span class="date-cell">${dateStr}</span></td>
+        <td>${resumeBtn}</td>
         <td id="status-${a.id}">${statusBadgeHTML(a.status)}</td>
         <td>
           <div class="action-cell">
@@ -98,6 +103,38 @@ function renderTable() {
     btn.addEventListener('click', async e => {
       e.stopPropagation();
       await changeStatus(parseInt(btn.dataset.id), 'REJECTED');
+    });
+  });
+  
+  // Bind resume view buttons
+  document.querySelectorAll('.resume-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const applicantId = btn.dataset.applicantId;
+      const token = getToken();
+      
+      // Fetch with authorization header, then open blob URL
+      try {
+        const response = await fetch(`${API_BASE}/employer/applicant/${applicantId}/resume`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          showToast('Failed to load resume');
+          return;
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        
+        // Clean up blob URL after a delay
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      } catch (err) {
+        showToast('Error loading resume: ' + err.message);
+      }
     });
   });
 }

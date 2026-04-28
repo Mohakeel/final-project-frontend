@@ -1,8 +1,10 @@
+# ─── Database Models ──────────────────────────────────────────────────────────
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 db = SQLAlchemy()
 
+# ─── Base User Table (all roles share this) ───────────────────────────────────
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -12,6 +14,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── Applicant Profile ────────────────────────────────────────────────────────
 class Applicant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -22,24 +25,29 @@ class Applicant(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── Employer Profile ─────────────────────────────────────────────────────────
 class Employer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     company_name = db.Column(db.String(100))
     company_email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     industry = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── University Profile ───────────────────────────────────────────────────────
 class University(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     uni_name = db.Column(db.String(100))
     uni_email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     uni_code = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── Job Posting ──────────────────────────────────────────────────────────────
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=False)
@@ -49,12 +57,12 @@ class Job(db.Model):
     salary_min = db.Column(db.Float, nullable=True)
     salary_max = db.Column(db.Float, nullable=True)
     job_type = db.Column(db.String(50), nullable=True)
-    status = db.Column(db.String(20), default='DRAFT')
+    status = db.Column(db.String(20), default='DRAFT')          # DRAFT / OPEN / CLOSED
     credential_required = db.Column(db.Boolean, default=False)
     is_public = db.Column(db.Boolean, default=True)
     ai_matching = db.Column(db.Boolean, default=False)
-    # Extended fields
-    responsibilities = db.Column(db.Text, nullable=True)   # newline-separated list
+    # ─── Extended Job Fields ──────────────────────────────────────────────────
+    responsibilities = db.Column(db.Text, nullable=True)
     req_education    = db.Column(db.String(200), nullable=True)
     req_experience   = db.Column(db.String(200), nullable=True)
     req_tech_skills  = db.Column(db.String(200), nullable=True)
@@ -62,15 +70,17 @@ class Job(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── Job Application ──────────────────────────────────────────────────────────
 class JobApplication(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
     applicant_id = db.Column(db.Integer, db.ForeignKey('applicant.id'), nullable=False)
-    status = db.Column(db.String(20), default='PENDING')  # PENDING, REVIEWED, ACCEPTED, REJECTED
+    status = db.Column(db.String(20), default='PENDING')        # PENDING / REVIEWED / ACCEPTED / REJECTED
     cover_letter = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# ─── Credential Verification Request ─────────────────────────────────────────
 class VerificationRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=False)
@@ -78,39 +88,37 @@ class VerificationRequest(db.Model):
     student_name = db.Column(db.String(100))
     degree = db.Column(db.String(100))
     year = db.Column(db.Integer)
-    status = db.Column(db.String(20), default='PENDING')
-    cert_hash = db.Column(db.String(64), nullable=True)  # Blockchain hash
+    status = db.Column(db.String(20), default='PENDING')        # PENDING / VERIFIED / REJECTED
+    cert_hash = db.Column(db.String(64), nullable=True)         # SHA-256 blockchain hash
     rejection_reason = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-
+# ─── JWT Token Blocklist (Logout / Revocation) ────────────────────────────────
 class TokenBlocklist(db.Model):
-    """Tracks revoked JWT tokens by their JTI (JWT ID)."""
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+# ─── Certificate Ledger (Blockchain-Inspired Store) ───────────────────────────
 class Certificate(db.Model):
-    """Stores issued certificates by universities"""
     id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('university.id'), nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
-    certificate_id = db.Column(db.String(50), nullable=True)   # Registration / Certificate ID
+    certificate_id = db.Column(db.String(50), nullable=True)
     degree = db.Column(db.String(100), nullable=False)
     graduation_year = db.Column(db.Integer, nullable=False)
-    cert_hash = db.Column(db.String(64), unique=True, nullable=False)
+    cert_hash = db.Column(db.String(64), unique=True, nullable=False)   # Unique SHA-256 hash
     status = db.Column(db.String(20), default='VERIFIED')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-
+# ─── In-App Notification ──────────────────────────────────────────────────────
 class Notification(db.Model):
-    """In-app notifications for all user roles"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(120), nullable=False)
     message = db.Column(db.String(300), nullable=False)
-    type = db.Column(db.String(30), default='info')   # info, success, warning
+    type = db.Column(db.String(30), default='info')             # info / success / warning
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

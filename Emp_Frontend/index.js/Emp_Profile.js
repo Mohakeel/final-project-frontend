@@ -91,11 +91,23 @@ function showToast(msg) {
 async function loadProfile() {
   try {
     const profile = await getEmpProfile();
+    console.log('Employer profile data:', profile); // Debug log
+    
     const nameEl  = document.getElementById('companyName');
     const indEl   = document.getElementById('industry');
     const emailEl = document.getElementById('corpEmail');
+    const phoneEl = document.getElementById('phoneNumber');
+    const accountEmailEl = document.getElementById('accountEmail'); // Login email field if exists
+    
     if (nameEl  && profile.company_name)  nameEl.value  = profile.company_name;
     if (emailEl && profile.company_email) emailEl.value = profile.company_email;
+    if (phoneEl && profile.phone) phoneEl.value = profile.phone;
+    
+    // Populate login email if field exists
+    if (accountEmailEl && profile.email) {
+      accountEmailEl.value = profile.email;
+    }
+    
     if (indEl   && profile.industry) {
       const opts = Array.from(indEl.options);
       const match = opts.find(o => o.value.toLowerCase() === (profile.industry || '').toLowerCase());
@@ -106,6 +118,7 @@ async function loadProfile() {
       setName(profile.company_name);
     }
   } catch (err) {
+    console.error('Failed to load employer profile:', err);
     showToast('Failed to load profile: ' + err.message);
   }
 }
@@ -142,13 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', async () => {
       const name  = document.getElementById('companyName').value.trim();
       const email = document.getElementById('corpEmail').value.trim();
+      const phone = document.getElementById('phoneNumber').value.trim();
       const industry = document.getElementById('industry').value;
       if (!name)  { showToast('Company name is required.'); return; }
       if (!email || !email.includes('@')) { showToast('Please enter a valid corporate email address.'); return; }
       saveBtn.textContent = 'Saving...';
       saveBtn.disabled    = true;
       try {
-        await updateEmpProfile({ company_name: name, company_email: email, industry });
+        await updateEmpProfile({ company_name: name, company_email: email, phone: phone, industry });
         showToast('Profile saved successfully.');
         saveBtn.textContent = '✔ Saved!';
         saveBtn.style.background = '#16a34a';

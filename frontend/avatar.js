@@ -2,7 +2,7 @@
  * Shared avatar loader — call initAvatar() on DOMContentLoaded on every page.
  * On profile pages, also call initAvatarUpload() to enable click-to-upload.
  */
-import { getMe, uploadAvatar, API_BASE } from './api.js';
+import { getMe, uploadAvatar, API_BASE, getName } from './api.js';
 
 let currentUserId = null;
 
@@ -13,8 +13,16 @@ export async function initAvatar() {
 
     if (me.has_avatar) {
       setAvatarImage(`${API_BASE}/auth/avatar/${me.id}?t=${Date.now()}`);
+    } else {
+      // Show first letter of name as fallback
+      const userName = getName() || 'User';
+      setAvatarInitials(userName);
     }
-  } catch (_) {}
+  } catch (_) {
+    // If API fails, try to show initials from stored name
+    const userName = getName() || 'User';
+    setAvatarInitials(userName);
+  }
 }
 
 function setAvatarImage(url) {
@@ -25,6 +33,40 @@ function setAvatarImage(url) {
     el.style.backgroundPosition = 'center';
     el.style.color = 'transparent'; // hide initials text
     el.style.fontSize = '0';
+    el.textContent = ''; // Clear any text content
+  });
+}
+
+function setAvatarInitials(name) {
+  // Get first letter of name
+  const initial = name.trim().charAt(0).toUpperCase();
+  
+  // Generate a consistent color based on the name
+  const colors = [
+    { bg: '#e0f2fe', text: '#0369a1' }, // blue
+    { bg: '#fce7f3', text: '#be185d' }, // pink
+    { bg: '#ddd6fe', text: '#6d28d9' }, // purple
+    { bg: '#fef3c7', text: '#d97706' }, // amber
+    { bg: '#d1fae5', text: '#059669' }, // green
+    { bg: '#ffe4e6', text: '#e11d48' }, // rose
+    { bg: '#e0e7ff', text: '#4f46e5' }, // indigo
+    { bg: '#fed7aa', text: '#c2410c' }, // orange
+  ];
+  
+  // Use first character code to pick a color
+  const colorIndex = name.charCodeAt(0) % colors.length;
+  const color = colors[colorIndex];
+  
+  document.querySelectorAll('.avatar').forEach(el => {
+    el.style.backgroundImage = 'none';
+    el.style.backgroundColor = color.bg;
+    el.style.color = color.text;
+    el.style.fontSize = '18px';
+    el.style.fontWeight = '600';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.textContent = initial;
   });
 }
 
@@ -88,9 +130,17 @@ export function initAvatarUpload(onSuccess) {
 
     try {
       await uploadAvatar(file);
+      // Refresh avatar to show uploaded image
+      await initAvatar();
       if (onSuccess) onSuccess();
     } catch (e) {
       alert('Failed to upload: ' + e.message);
+      // Revert to initials on error
+      const userName = getName() || 'User';
+      setAvatarInitials(userName);
     }
   });
 }
+
+// Export setAvatarInitials for use in other modules
+export { setAvatarInitials };

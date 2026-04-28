@@ -54,8 +54,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Load profile ──
   try {
     const profile = await getApplicantProfile();
-    if (nameInput  && profile.full_name) nameInput.value  = profile.full_name;
-    if (phoneInput && profile.phone)     phoneInput.value = profile.phone;
+    console.log('Profile data:', profile); // Debug log
+    
+    if (emailInput && profile.email) {
+      emailInput.value = profile.email;
+    } else {
+      console.warn('Email not found in profile:', profile);
+    }
+    
+    if (nameInput && profile.full_name) {
+      nameInput.value = profile.full_name;
+    }
+    
+    if (phoneInput && profile.phone) {
+      phoneInput.value = profile.phone;
+    } else if (phoneInput) {
+      phoneInput.placeholder = 'Add your phone number';
+    }
 
     // Topbar — persist updated name
     if (userNameEl && profile.full_name) {
@@ -63,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       setName(profile.full_name);
     }
   } catch (err) {
-    console.warn('Profile load error:', err.message);
+    console.error('Profile load error:', err);
   }
 
   // ── Save Changes ──

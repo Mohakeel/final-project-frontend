@@ -26,12 +26,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const uniNameInput    = document.getElementById('uni-name');
   const adminEmailInput = document.getElementById('admin-email');
+  const phoneInput      = document.getElementById('phone-number');
 
   // ── Load profile ──
   try {
     const profile = await getUniProfile();
+    console.log('University profile data:', profile); // Debug log
+    
     if (uniNameInput    && profile.uni_name)  uniNameInput.value    = profile.uni_name;
     if (adminEmailInput && profile.uni_email) adminEmailInput.value = profile.uni_email;
+    if (phoneInput      && profile.phone)     phoneInput.value      = profile.phone;
+
+    // Populate login email if field exists
+    const accountEmailEl = document.getElementById('accountEmail');
+    if (accountEmailEl && profile.email) {
+      accountEmailEl.value = profile.email;
+    }
 
     // Populate topbar — also persist updated name
     if (userNameEl && profile.uni_name) {
@@ -43,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const codeEl = document.querySelector('.field-code');
     if (codeEl && profile.uni_code) codeEl.textContent = profile.uni_code;
   } catch (err) {
+    console.error('Failed to load university profile:', err);
     showToast('Failed to load profile: ' + err.message);
   }
 
@@ -52,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateBtn.addEventListener('click', async () => {
       const name  = uniNameInput  ? uniNameInput.value.trim()  : '';
       const email = adminEmailInput ? adminEmailInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
 
       if (!name) { showToast('University name cannot be empty.'); uniNameInput?.focus(); return; }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateBtn.disabled    = true;
 
       try {
-        await updateUniProfile({ uni_name: name, uni_email: email });
+        await updateUniProfile({ uni_name: name, uni_email: email, phone: phone });
         showToast('Profile updated successfully.');
         updateBtn.innerHTML = '&#10003; Saved!';
         updateBtn.style.background = '#28a86a';
@@ -86,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const profile = await getUniProfile();
         if (uniNameInput    && profile.uni_name)  uniNameInput.value    = profile.uni_name;
         if (adminEmailInput && profile.uni_email) adminEmailInput.value = profile.uni_email;
+        if (phoneInput      && profile.phone)     phoneInput.value      = profile.phone;
         showToast('Changes reset to original values.');
       } catch (_) {
         showToast('Could not reset — please reload the page.');

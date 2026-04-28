@@ -72,7 +72,7 @@
         </button>
         <div class="user-info">
           <div>
-            <div class="user-name">Alexander Thorne</div>
+            <div class="user-name">Loading...</div>
             <div class="user-role">Gold Member</div>
           </div>
           <div class="avatar">AT</div>
@@ -100,7 +100,7 @@
           <div class="field-group">
             <label class="field-label">Account Email</label>
             <div class="email-row">
-              <input type="email" class="field-input" value="alex.rivera@globaltech.com" id="emailInput"/>
+              <input type="email" class="field-input" value="" id="emailInput" readonly/>
               <span class="verified-badge">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/><path d="M9 12l2 2 4-4"/></svg>
                 Verified
@@ -113,11 +113,11 @@
           <div class="two-col">
             <div class="field-group">
               <label class="field-label">Full Legal Name</label>
-              <input type="text" class="field-input" value="Alex Rivera" id="nameInput"/>
+              <input type="text" class="field-input" value="" id="nameInput" placeholder="Enter your full name"/>
             </div>
             <div class="field-group">
               <label class="field-label">Phone Number</label>
-              <input type="tel" class="field-input" value="+1 (555) 012-3456" id="phoneInput"/>
+              <input type="tel" class="field-input" value="" id="phoneInput" placeholder="+1 (555) 000-0000"/>
             </div>
           </div>
 
@@ -172,19 +172,13 @@
           <!-- Verification Records -->
           <div class="records-card">
             <div class="records-title">Verification Records</div>
-            <div class="record-item">
-              <div class="record-left">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                B.S. Computer Science
-              </div>
-              <span class="rec-badge verified">VERIFIED</span>
-            </div>
-            <div class="record-item">
-              <div class="record-left">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
-                SSN/Tax ID
-              </div>
-              <span class="rec-badge pending">PENDING</span>
+            <div style="padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin: 0 auto 12px;">
+                <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+              <p>No verification records yet</p>
+              <p style="font-size: 12px; margin-top: 8px;">Your verified credentials will appear here</p>
             </div>
           </div>
 

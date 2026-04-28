@@ -67,10 +67,14 @@ export async function login(email, password) {
   });
 }
 
-export async function register(email, password, role, name) {
+export async function register(email, password, role, name, mobile, uni_code) {
+  const body = { email, password, role, name, mobile };
+  if (uni_code) {
+    body.uni_code = uni_code;
+  }
   return apiFetch('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, role, name }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -110,9 +114,6 @@ export async function processVerification(id, status, reason) {
   });
 }
 
-export async function verifyCertByHash(hash) {
-  return apiFetch(`/university/certificate-verification/${hash}`);
-}
 
 // ── Certificate Management ────────────────────────────────
 export async function getCertificates() {
@@ -199,6 +200,12 @@ export async function getVerificationRequests() {
 
 export async function getUniversities() {
   return apiFetch('/employer/universities');
+}
+
+// ─── View Applicant Resume ────────────────────────────────────────────────────
+export function getApplicantResumeUrl(applicantId) {
+  const token = getToken();
+  return `${API_BASE}/employer/applicant/${applicantId}/resume?token=${token}`;
 }
 
 // ── Applicant ─────────────────────────────────────────────

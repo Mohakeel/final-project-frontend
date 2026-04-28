@@ -96,7 +96,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Company Name</label>
-              <input type="text" id="companyName" value="Global Finance Group" />
+              <input type="text" id="companyName" value="" />
             </div>
             <div class="form-group">
               <label>Industry</label>
@@ -115,12 +115,30 @@
           </div>
 
           <div class="form-group full-width">
+            <label>Account Email (Login)</label>
+            <div class="email-input-wrapper">
+              <input type="email" id="accountEmail" value="" readonly style="background: #f5f5f5; cursor: not-allowed;" />
+              <i class="fa-solid fa-envelope email-icon"></i>
+            </div>
+            <span class="form-hint">This is your login email address and cannot be changed here.</span>
+          </div>
+
+          <div class="form-group full-width">
             <label>Corporate Email Address</label>
             <div class="email-input-wrapper">
-              <input type="email" id="corpEmail" value="hr@globalfinance.com" />
+              <input type="email" id="corpEmail" value="" />
               <i class="fa-solid fa-envelope email-icon"></i>
             </div>
             <span class="form-hint">Verification links and administrative alerts will be sent to this verified address.</span>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Phone Number</label>
+            <div class="email-input-wrapper">
+              <input type="tel" id="phoneNumber" value="" placeholder="+1 (555) 000-0000" />
+              <i class="fa-solid fa-phone email-icon"></i>
+            </div>
+            <span class="form-hint">Contact number for verification and support purposes.</span>
           </div>
 
           <div class="form-actions">

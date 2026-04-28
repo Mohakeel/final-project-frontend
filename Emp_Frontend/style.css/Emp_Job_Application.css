@@ -711,6 +711,29 @@ p, .page-desc, .page-subtitle, .welcome-sub { font-size: 14px; color: #6b7280; l
 
 .act-btn:hover { background: #f4f5f7; }
 
+/* Resume Button */
+.resume-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #3b82f6;
+  background: #eff6ff;
+  color: #3b82f6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resume-btn:hover {
+  background: #3b82f6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
 /* Pagination */
 .pagination {
   display: flex;

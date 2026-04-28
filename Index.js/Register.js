@@ -93,6 +93,14 @@ roleBtns.forEach(btn => {
     roleBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedRole = btn.dataset.role;
+    
+    // Show/hide university code field based on role
+    const uniCodeField = document.getElementById('uniCodeField');
+    if (selectedRole === 'university') {
+      uniCodeField.style.display = 'block';
+    } else {
+      uniCodeField.style.display = 'none';
+    }
   });
 });
 
@@ -102,13 +110,25 @@ roleBtns.forEach(btn => {
 const pwInput   = document.getElementById('password');
 const togglePw  = document.getElementById('togglePw');
 const eyeIcon   = document.getElementById('eyeIcon');
+const confirmPwInput = document.getElementById('confirmPassword');
+const toggleConfirmPw = document.getElementById('toggleConfirmPw');
+const eyeIconConfirm = document.getElementById('eyeIconConfirm');
+
 const eyeOpen = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
 const eyeClosed = `<path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
 let pwVisible = false;
 togglePw.addEventListener('click', () => {
   pwVisible = !pwVisible;
   pwInput.type = pwVisible ? 'text' : 'password';
   eyeIcon.innerHTML = pwVisible ? eyeClosed : eyeOpen;
+});
+
+let confirmPwVisible = false;
+toggleConfirmPw.addEventListener('click', () => {
+  confirmPwVisible = !confirmPwVisible;
+  confirmPwInput.type = confirmPwVisible ? 'text' : 'password';
+  eyeIconConfirm.innerHTML = confirmPwVisible ? eyeClosed : eyeOpen;
 });
 
 // ========================
@@ -167,7 +187,12 @@ const nameInput  = document.getElementById('fullName');
 const nameError  = document.getElementById('nameError');
 const emailInput = document.getElementById('email');
 const emailError = document.getElementById('emailError');
+const mobileInput = document.getElementById('mobile');
+const mobileError = document.getElementById('mobileError');
+const uniCodeInput = document.getElementById('uniCode');
+const uniCodeError = document.getElementById('uniCodeError');
 const pwError    = document.getElementById('pwError');
+const confirmPwError = document.getElementById('confirmPwError');
 
 nameInput.addEventListener('blur', () => {
   const v = nameInput.value.trim();
@@ -194,6 +219,37 @@ emailInput.addEventListener('input', () => {
   }
 });
 
+mobileInput.addEventListener('blur', () => {
+  const v = mobileInput.value.trim();
+  const phoneRx = /^[\d\s\-\+\(\)]+$/;
+  if (!v) showError(mobileInput, mobileError, 'Mobile number is required.');
+  else if (v.length < 10) showError(mobileInput, mobileError, 'Please enter a valid mobile number.');
+  else if (!phoneRx.test(v)) showError(mobileInput, mobileError, 'Mobile number can only contain digits, spaces, and +()-.');
+  else showValid(mobileInput, mobileError);
+});
+mobileInput.addEventListener('input', () => {
+  if (mobileInput.classList.contains('error')) {
+    const v = mobileInput.value.trim();
+    const phoneRx = /^[\d\s\-\+\(\)]+$/;
+    if (v.length >= 10 && phoneRx.test(v)) showValid(mobileInput, mobileError);
+  }
+});
+
+uniCodeInput.addEventListener('blur', () => {
+  const v = uniCodeInput.value.trim();
+  if (v && !/^[A-Za-z0-9\-]+$/.test(v)) {
+    showError(uniCodeInput, uniCodeError, 'University code can only contain letters, numbers, and hyphens.');
+  } else {
+    showValid(uniCodeInput, uniCodeError);
+  }
+});
+uniCodeInput.addEventListener('input', () => {
+  if (uniCodeInput.classList.contains('error')) {
+    const v = uniCodeInput.value.trim();
+    if (!v || /^[A-Za-z0-9\-]+$/.test(v)) showValid(uniCodeInput, uniCodeError);
+  }
+});
+
 pwInput.addEventListener('blur', () => {
   const v = pwInput.value;
   if (!v) showError(pwInput, pwError, 'Password is required.');
@@ -205,6 +261,26 @@ pwInput.addEventListener('input', () => {
   if (pwInput.classList.contains('error')) {
     const v = pwInput.value;
     if (v.length >= 12 && /[^A-Za-z0-9]/.test(v)) showValid(pwInput, pwError);
+  }
+  // Also revalidate confirm password if it has a value
+  if (confirmPwInput.value) {
+    if (confirmPwInput.value !== pwInput.value) {
+      showError(confirmPwInput, confirmPwError, 'Passwords do not match.');
+    } else {
+      showValid(confirmPwInput, confirmPwError);
+    }
+  }
+});
+
+confirmPwInput.addEventListener('blur', () => {
+  const v = confirmPwInput.value;
+  if (!v) showError(confirmPwInput, confirmPwError, 'Please confirm your password.');
+  else if (v !== pwInput.value) showError(confirmPwInput, confirmPwError, 'Passwords do not match.');
+  else showValid(confirmPwInput, confirmPwError);
+});
+confirmPwInput.addEventListener('input', () => {
+  if (confirmPwInput.classList.contains('error')) {
+    if (confirmPwInput.value === pwInput.value) showValid(confirmPwInput, confirmPwError);
   }
 });
 
@@ -234,20 +310,47 @@ const successOverlay = document.getElementById('successOverlay');
 function validateAll() {
   let valid = true;
   const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRx = /^[\d\s\-\+\(\)]+$/;
+  
   const name = nameInput.value.trim();
   if (!name || name.length < 2) {
     showError(nameInput, nameError, !name ? 'Full name is required.' : 'Name must be at least 2 characters.');
     valid = false;
   } else showValid(nameInput, nameError);
+  
   const email = emailInput.value.trim();
   if (!email) { showError(emailInput, emailError, 'Email address is required.'); valid = false; }
   else if (!emailRx.test(email)) { showError(emailInput, emailError, 'Please enter a valid email address.'); valid = false; }
   else showValid(emailInput, emailError);
+  
+  const mobile = mobileInput.value.trim();
+  if (!mobile) { showError(mobileInput, mobileError, 'Mobile number is required.'); valid = false; }
+  else if (mobile.length < 10) { showError(mobileInput, mobileError, 'Please enter a valid mobile number.'); valid = false; }
+  else if (!phoneRx.test(mobile)) { showError(mobileInput, mobileError, 'Mobile number can only contain digits, spaces, and +()-.'); valid = false; }
+  else showValid(mobileInput, mobileError);
+  
+  // University code validation (optional field, only validate if provided)
+  if (selectedRole === 'university') {
+    const uniCode = uniCodeInput.value.trim();
+    if (uniCode && !/^[A-Za-z0-9\-]+$/.test(uniCode)) {
+      showError(uniCodeInput, uniCodeError, 'University code can only contain letters, numbers, and hyphens.');
+      valid = false;
+    } else {
+      showValid(uniCodeInput, uniCodeError);
+    }
+  }
+  
   const pw = pwInput.value;
   if (!pw) { showError(pwInput, pwError, 'Password is required.'); valid = false; }
   else if (pw.length < 12) { showError(pwInput, pwError, 'Password must be at least 12 characters.'); valid = false; }
   else if (!/[^A-Za-z0-9]/.test(pw)) { showError(pwInput, pwError, 'Password must include at least one symbol.'); valid = false; }
   else showValid(pwInput, pwError);
+  
+  const confirmPw = confirmPwInput.value;
+  if (!confirmPw) { showError(confirmPwInput, confirmPwError, 'Please confirm your password.'); valid = false; }
+  else if (confirmPw !== pw) { showError(confirmPwInput, confirmPwError, 'Passwords do not match.'); valid = false; }
+  else showValid(confirmPwInput, confirmPwError);
+  
   return valid;
 }
 
@@ -260,19 +363,38 @@ createBtn.addEventListener('click', async () => {
   getOrCreateErrorEl().textContent = '';
 
   try {
+    // Prepare registration data
+    const registrationData = {
+      email: emailInput.value.trim(),
+      password: pwInput.value,
+      role: selectedRole,
+      name: nameInput.value.trim(),
+      mobile: mobileInput.value.trim()
+    };
+    
+    // Add university code if role is university and code is provided
+    if (selectedRole === 'university') {
+      const uniCode = uniCodeInput.value.trim();
+      if (uniCode) {
+        registrationData.uni_code = uniCode;
+      }
+    }
+    
     const data = await register(
-      emailInput.value.trim(),
-      pwInput.value,
-      selectedRole,
-      nameInput.value.trim()
+      registrationData.email,
+      registrationData.password,
+      registrationData.role,
+      registrationData.name,
+      registrationData.mobile,
+      registrationData.uni_code
     );
     setToken(data.access_token);
     setRole(data.role);
     setName(data.name || nameInput.value.trim());
 
-    // Show success overlay briefly, then redirect — overlay is NOT dismissable during redirect
+    // Show success overlay and redirect
     successOverlay.classList.add('active');
-    // Use relative path for localhost, absolute for GitHub Pages
+
     let dest;
     if (window.location.pathname.includes('/CertiVerify/')) {
       const base = '/CertiVerify';
@@ -286,7 +408,7 @@ createBtn.addEventListener('click', async () => {
              data.role === 'university' ? '../Uni_Frontend/Uni_Dashboard.html'       :
              'index.html';
     }
-    setTimeout(() => { window.location.href = dest; }, 1200);
+    setTimeout(() => { window.location.href = dest; }, 800);
   } catch (err) {
     getOrCreateErrorEl().textContent = err.message || 'Registration failed. Please try again.';
     btnText.classList.remove('hidden');
@@ -297,6 +419,6 @@ createBtn.addEventListener('click', async () => {
 
 // Overlay is intentionally not dismissable — redirect happens automatically
 
-[nameInput, emailInput, pwInput].forEach(input => {
+[nameInput, emailInput, mobileInput, pwInput, confirmPwInput].forEach(input => {
   input.addEventListener('keydown', e => { if (e.key === 'Enter') createBtn.click(); });
 });

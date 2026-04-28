@@ -1,3 +1,4 @@
+# ─── Employer Routes ──────────────────────────────────────────────────────────
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.models import db, Job, VerificationRequest, Employer, JobApplication, Applicant, User
@@ -5,7 +6,11 @@ from utils.decorators import role_required
 
 employer_bp = Blueprint('employer', __name__)
 
-# Job Management Routes
+# ═══════════════════════════════════════════════════════════════════════════════
+# JOB MANAGEMENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Create Job ───────────────────────────────────────────────────────────────
 @employer_bp.route('/jobs', methods=['POST'])
 @jwt_required()
 @role_required('employer')
@@ -13,15 +18,15 @@ def create_job():
     data = request.get_json()
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
-    
-    # Determine status: if 'status' is provided use it, otherwise default to OPEN
+
+    # ─── Status validation (DRAFT / OPEN / CLOSED) ───────────────────────────
     status = data.get('status', 'OPEN')
     if status not in ['DRAFT', 'OPEN', 'CLOSED']:
         status = 'OPEN'
-    
+
     new_job = Job(
         employer_id=employer.id,
         title=data.get('title'),
@@ -44,16 +49,17 @@ def create_job():
     db.session.commit()
     return jsonify({"message": "Job created successfully", "job_id": new_job.id}), 201
 
+# ─── Get All Jobs (for this employer) ────────────────────────────────────────
 @employer_bp.route('/jobs', methods=['GET'])
 @jwt_required()
 @role_required('employer')
 def get_my_jobs():
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
-    
+
     jobs = Job.query.filter_by(employer_id=employer.id).all()
     output = []
     for job in jobs:
@@ -79,17 +85,18 @@ def get_my_jobs():
         })
     return jsonify(output), 200
 
+# ─── Get Single Job ───────────────────────────────────────────────────────────
 @employer_bp.route('/job/<int:job_id>', methods=['GET'])
 @jwt_required()
 @role_required('employer')
 def get_job(job_id):
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     job = Job.query.filter_by(id=job_id, employer_id=employer.id).first()
     if not job:
         return jsonify({"error": "Job not found"}), 404
-    
+
     return jsonify({
         "id": job.id,
         "title": job.title,
@@ -103,116 +110,123 @@ def get_job(job_id):
         "updated_at": job.updated_at.isoformat() if job.updated_at else None
     }), 200
 
+# ─── Update Job ───────────────────────────────────────────────────────────────
 @employer_bp.route('/job/<int:job_id>', methods=['PUT'])
 @jwt_required()
 @role_required('employer')
 def update_job(job_id):
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     job = Job.query.filter_by(id=job_id, employer_id=employer.id).first()
     if not job:
         return jsonify({"error": "Job not found"}), 404
-    
+
     data = request.get_json()
-    if 'title' in data:
-        job.title = data['title']
-    if 'description' in data:
-        job.description = data['description']
-    if 'location' in data:
-        job.location = data['location']
-    if 'salary_min' in data:
-        job.salary_min = data['salary_min']
-    if 'salary_max' in data:
-        job.salary_max = data['salary_max']
-    if 'job_type' in data:
-        job.job_type = data['job_type']
-    if 'status' in data:
-        job.status = data['status']
-    if 'responsibilities' in data:
-        job.responsibilities = data['responsibilities']
-    if 'req_education' in data:
-        job.req_education = data['req_education']
-    if 'req_experience' in data:
-        job.req_experience = data['req_experience']
-    if 'req_tech_skills' in data:
-        job.req_tech_skills = data['req_tech_skills']
-    if 'req_soft_skills' in data:
-        job.req_soft_skills = data['req_soft_skills']
-    
+    if 'title' in data:          job.title = data['title']
+    if 'description' in data:    job.description = data['description']
+    if 'location' in data:       job.location = data['location']
+    if 'salary_min' in data:     job.salary_min = data['salary_min']
+    if 'salary_max' in data:     job.salary_max = data['salary_max']
+    if 'job_type' in data:       job.job_type = data['job_type']
+    if 'status' in data:         job.status = data['status']
+    if 'responsibilities' in data: job.responsibilities = data['responsibilities']
+    if 'req_education' in data:  job.req_education = data['req_education']
+    if 'req_experience' in data: job.req_experience = data['req_experience']
+    if 'req_tech_skills' in data: job.req_tech_skills = data['req_tech_skills']
+    if 'req_soft_skills' in data: job.req_soft_skills = data['req_soft_skills']
+
     db.session.commit()
     return jsonify({"message": "Job updated successfully"}), 200
 
+# ─── Delete Job ───────────────────────────────────────────────────────────────
 @employer_bp.route('/job/<int:job_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('employer')
 def delete_job(job_id):
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     job = Job.query.filter_by(id=job_id, employer_id=employer.id).first()
     if not job:
         return jsonify({"error": "Job not found"}), 404
-    
+
     db.session.delete(job)
     db.session.commit()
     return jsonify({"message": "Job deleted successfully"}), 200
 
-# Job Applications Routes
+# ═══════════════════════════════════════════════════════════════════════════════
+# JOB APPLICATIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Get Applications for a Job ───────────────────────────────────────────────
 @employer_bp.route('/job/<int:job_id>/applications', methods=['GET'])
 @jwt_required()
 @role_required('employer')
 def get_job_applications(job_id):
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     job = Job.query.filter_by(id=job_id, employer_id=employer.id).first()
     if not job:
         return jsonify({"error": "Job not found"}), 404
-    
+
     applications = JobApplication.query.filter_by(job_id=job_id).all()
     output = []
-    
+
     for app in applications:
         applicant = Applicant.query.get(app.applicant_id)
         user = User.query.get(applicant.user_id) if applicant else None
+        
+        # ─── Include resume information ───────────────────────────────────────
+        resume_filename = None
+        if applicant and applicant.resume_path:
+            import os
+            resume_filename = os.path.basename(applicant.resume_path)
+        
         output.append({
             "id": app.id,
             "job_id": app.job_id,
             "applicant_id": app.applicant_id,
             "applicant_name": applicant.full_name if applicant else "Unknown",
             "applicant_email": user.email if user else "Unknown",
+            "applicant_phone": applicant.phone if applicant else None,
+            "resume_filename": resume_filename,
+            "has_resume": bool(applicant and applicant.resume_path),
             "status": app.status,
             "cover_letter": app.cover_letter,
             "created_at": app.created_at.isoformat() if app.created_at else None
         })
-    
+
     return jsonify(output), 200
 
+# ─── Update Application Status ────────────────────────────────────────────────
 @employer_bp.route('/application/<int:app_id>/status', methods=['PUT'])
 @jwt_required()
 @role_required('employer')
 def update_application_status(app_id):
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
+    # ─── Join query to ensure employer owns this application's job ────────────
     application = JobApplication.query.join(Job).filter(
         JobApplication.id == app_id,
         Job.employer_id == employer.id
     ).first()
-    
+
     if not application:
         return jsonify({"error": "Application not found"}), 404
-    
+
     data = request.get_json()
     status = data.get('status')
-    
+
+    # ─── Status whitelist validation ──────────────────────────────────────────
     if status not in ['PENDING', 'REVIEWED', 'ACCEPTED', 'REJECTED']:
         return jsonify({"error": "Invalid status"}), 400
-    
+
     application.status = status
-    
-    # Notify applicant (non-critical)
+
+    # ─── Notify applicant of status change ────────────────────────────────────
     try:
         from routes.notifications import create_notification
         applicant = Applicant.query.get(application.applicant_id)
@@ -229,10 +243,13 @@ def update_application_status(app_id):
         pass
 
     db.session.commit()
-    
     return jsonify({"message": f"Application status updated to {status}"}), 200
 
-# Verification Routes
+# ═══════════════════════════════════════════════════════════════════════════════
+# CREDENTIAL VERIFICATION (BLOCKCHAIN-INSPIRED LOGIC)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Request Verification ─────────────────────────────────────────────────────
 @employer_bp.route('/request-verification', methods=['POST'])
 @jwt_required()
 @role_required('employer')
@@ -247,10 +264,10 @@ def request_verification():
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
 
-    university_id  = data.get('university_id')
-    student_name   = normalize_name(data.get('student_name') or '')
-    degree         = (data.get('degree') or '').strip()
-    year           = data.get('year')
+    university_id = data.get('university_id')
+    student_name  = normalize_name(data.get('student_name') or '')
+    degree        = (data.get('degree') or '').strip()
+    year          = data.get('year')
 
     if not all([university_id, student_name, degree, year]):
         return jsonify({"error": "university_id, student_name, degree, and year are required"}), 400
@@ -259,8 +276,7 @@ def request_verification():
     if not university:
         return jsonify({"error": "University not found"}), 404
 
-    # ── Blockchain auto-verification ──
-    # Generate the hash from the employer's input and look it up in the certificate table
+    # ─── Step 1: Generate SHA-256 hash from employer's input ─────────────────
     candidate_hash = generate_hash(
         student_name,
         university.uni_name or 'University',
@@ -268,18 +284,18 @@ def request_verification():
         int(year)
     )
 
+    # ─── Step 2: Look up hash in the certificate ledger ──────────────────────
     matched_cert = Certificate.query.filter_by(
         cert_hash=candidate_hash,
         university_id=university_id
     ).first()
 
+    # ─── Step 3: Auto-verify if hash matches, else send for manual review ─────
     if matched_cert:
-        # Hash found in blockchain ledger → auto-verify instantly
         status    = 'VERIFIED'
         cert_hash = candidate_hash
         message   = "Certificate verified automatically via blockchain hash match"
     else:
-        # No match → send to university for manual review
         status    = 'PENDING'
         cert_hash = None
         message   = "Certificate not found in blockchain ledger. Request sent to university for manual review."
@@ -295,7 +311,7 @@ def request_verification():
     )
     db.session.add(new_request)
 
-    # Notify based on result (non-critical)
+    # ─── Notify relevant parties ──────────────────────────────────────────────
     try:
         from routes.notifications import create_notification
         if matched_cert:
@@ -315,6 +331,7 @@ def request_verification():
         "auto_verified": matched_cert is not None
     }), 201
 
+# ─── Get All Verification Requests (for this employer) ───────────────────────
 @employer_bp.route('/verification-requests', methods=['GET'])
 @jwt_required()
 @role_required('employer')
@@ -346,52 +363,60 @@ def get_verification_requests():
 
     return jsonify(output), 200
 
-# Employer Profile Routes
+# ═══════════════════════════════════════════════════════════════════════════════
+# EMPLOYER PROFILE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Get Profile ──────────────────────────────────────────────────────────────
 @employer_bp.route('/profile', methods=['GET'])
 @jwt_required()
 @role_required('employer')
 def get_employer_profile():
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
-    
+
+    # ─── Fetch email from User table ─────────────────────────────────────────
+    user = User.query.get(user_id)
+
     return jsonify({
         "id": employer.id,
+        "email": user.email if user else None,
         "company_name": employer.company_name,
         "company_email": employer.company_email,
+        "phone": employer.phone,
         "industry": employer.industry,
         "created_at": employer.created_at.isoformat() if employer.created_at else None,
         "updated_at": employer.updated_at.isoformat() if employer.updated_at else None
     }), 200
 
+# ─── Update Profile ───────────────────────────────────────────────────────────
 @employer_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 @role_required('employer')
 def update_employer_profile():
     user_id = int(get_jwt_identity())
     employer = Employer.query.filter_by(user_id=user_id).first()
-    
+
     if not employer:
         return jsonify({"error": "Employer profile not found"}), 404
-    
+
     data = request.get_json()
-    if 'company_name' in data:
-        employer.company_name = data['company_name']
-    if 'company_email' in data:
-        employer.company_email = data['company_email']
-    if 'industry' in data:
-        employer.industry = data['industry']
-    
+    if 'company_name' in data:  employer.company_name = data['company_name']
+    if 'company_email' in data: employer.company_email = data['company_email']
+    if 'phone' in data:         employer.phone = data['phone']
+    if 'industry' in data:      employer.industry = data['industry']
+
     db.session.commit()
     return jsonify({"message": "Employer profile updated successfully"}), 200
 
+# ─── Get Universities List (for verification form dropdown) ───────────────────
 @employer_bp.route('/universities', methods=['GET'])
 @jwt_required()
 @role_required('employer')
 def get_universities():
-    """Get list of all universities for verification request form"""
     from models.models import University
     universities = University.query.all()
     output = []
@@ -402,3 +427,45 @@ def get_universities():
             "uni_code": uni.uni_code
         })
     return jsonify(output), 200
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RESUME ACCESS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── View Applicant Resume ────────────────────────────────────────────────────
+@employer_bp.route('/applicant/<int:applicant_id>/resume', methods=['GET'])
+@jwt_required()
+@role_required('employer')
+def view_applicant_resume(applicant_id):
+    from flask import send_file
+    import os
+    from flask import current_app
+    
+    user_id = int(get_jwt_identity())
+    employer = Employer.query.filter_by(user_id=user_id).first()
+    
+    if not employer:
+        return jsonify({"error": "Employer profile not found"}), 404
+    
+    # ─── Verify employer has access (applicant applied to one of their jobs) ──
+    application_exists = JobApplication.query.join(Job).filter(
+        JobApplication.applicant_id == applicant_id,
+        Job.employer_id == employer.id
+    ).first()
+    
+    if not application_exists:
+        return jsonify({"error": "You don't have access to this applicant's resume"}), 403
+    
+    # ─── Get resume file ──────────────────────────────────────────────────────
+    applicant = Applicant.query.get(applicant_id)
+    if not applicant or not applicant.resume_path:
+        return jsonify({"error": "Resume not found"}), 404
+    
+    file_path = applicant.resume_path
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(current_app.root_path, file_path)
+    
+    if not os.path.exists(file_path):
+        return jsonify({"error": "Resume file not found on server"}), 404
+    
+    return send_file(file_path, mimetype='application/pdf', as_attachment=False)

@@ -9,14 +9,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Load universities from API ──
   try {
     const universities = await getUniversities();
+    console.log('🏛️ Universities loaded:', universities.length);
+    console.log('Universities:', universities);
+    
     const menu = document.getElementById('dropdownMenu');
     if (menu && universities.length > 0) {
       menu.innerHTML = universities.map(u =>
         `<div class="dropdown-item" onclick="selectInstitution('${u.uni_name}', ${u.id})">${u.uni_name}</div>`
       ).join('');
+      console.log('✅ Dropdown populated with', universities.length, 'universities');
+    } else {
+      console.warn('⚠️ No universities found or menu element missing');
     }
   } catch (err) {
-    console.warn('Failed to load universities:', err.message);
+    console.error('❌ Failed to load universities:', err.message);
   }
 });
 
